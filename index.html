@@ -48,14 +48,19 @@
   html{ scrollbar-color:var(--rosa-medio) var(--rosa-claro); scrollbar-width:thin; }
 
   .container{ max-width:1200px; margin:0 auto; padding:0 24px; }
+  @media (max-width:768px){ .container{ padding:0 16px; } }
 
-  /* ===== Logo (fallback tipográfico, sin archivos de imagen) ===== */
-  .logo{ display:flex; align-items:center; gap:8px; }
-  .logo svg{ width:30px; height:30px; flex-shrink:0; }
-  .logo-text{ font-family:var(--font-display); font-size:1.5rem; letter-spacing:0.5px; color:var(--rosa-principal); }
+  /* ===== Logo (imagen real, con fallback tipográfico si el PNG no carga) ===== */
+  .logo{ display:flex; align-items:center; gap:8px; min-width:0; }
+  .logo-img{ height:48px; width:auto; flex-shrink:0; }
+  .logo-text-fallback{ display:none; align-items:center; gap:8px; }
+  .logo-text-fallback svg{ width:30px; height:30px; flex-shrink:0; }
+  .logo-text{ font-family:var(--font-display); font-size:1.5rem; letter-spacing:0.5px; color:var(--rosa-principal); white-space:nowrap; }
   .logo-text small{ display:block; font-family:var(--font-body); font-weight:300; font-size:0.55rem; letter-spacing:3px; color:var(--rosa-oscuro); text-transform:uppercase; margin-top:-4px; }
+  .logo.blanco .logo-img{ height:40px; }
   .logo.blanco .logo-text{ color:var(--blanco); }
   .logo.blanco .logo-text small{ color:var(--rosa-claro); opacity:0.85; }
+  @media (max-width:480px){ .logo-img{ height:36px; } }
 
   /* ===== Header ===== */
   header{
@@ -68,11 +73,11 @@
   }
   header .container{
     display:flex; align-items:center; justify-content:space-between;
-    height:76px;
+    height:76px; flex-wrap:nowrap; gap:12px;
   }
   .cart-btn{
     position:relative; display:flex; align-items:center; justify-content:center;
-    width:46px; height:46px; border-radius:50%;
+    width:46px; height:46px; border-radius:50%; flex-shrink:0;
     background:var(--blanco); border:none; cursor:pointer;
     box-shadow:0 2px 10px rgba(224,126,144,0.2);
     transition:transform 0.2s;
@@ -181,7 +186,8 @@
   .cat-sub{ text-align:center; color:var(--dorado); font-size:0.85rem; letter-spacing:2px; text-transform:uppercase; margin-bottom:36px; }
 
   .grid{
-    display:grid; grid-template-columns:repeat(3, 1fr); gap:28px;
+    display:grid; grid-template-columns:repeat(3, 1fr); grid-template-rows:auto;
+    align-items:stretch; gap:24px;
   }
   @media (max-width:900px){ .grid{ grid-template-columns:repeat(2,1fr); } }
   @media (max-width:600px){ .grid{ grid-template-columns:1fr; } }
@@ -191,13 +197,15 @@
     box-shadow:0 4px 20px rgba(224,126,144,0.12);
     transition:transform 0.3s, box-shadow 0.3s;
     opacity:0; transform:translateY(30px);
+    display:flex; flex-direction:column; height:100%;
+    cursor:pointer;
   }
   .card.visible{ animation:cardIn 0.6s ease forwards; }
   @keyframes cardIn{ to{ opacity:1; transform:translateY(0); } }
   .card:hover{ transform:translateY(-4px); box-shadow:0 14px 34px rgba(224,126,144,0.24); }
 
   .card-img{
-    width:100%; aspect-ratio:4/3; object-fit:cover; background:var(--rosa-medio);
+    width:100%; height:220px; object-fit:cover; background:var(--rosa-medio); flex-shrink:0;
   }
   .card-img.placeholder{
     display:flex; align-items:center; justify-content:center;
@@ -205,11 +213,14 @@
   }
   .card-img.placeholder svg{ width:64px; height:64px; opacity:0.55; }
 
-  .card-body{ padding:20px 22px 22px; }
+  .card-body{
+    padding:20px 22px 22px; flex:1;
+    display:flex; flex-direction:column; justify-content:space-between;
+  }
   .card-body h3{ font-size:1.25rem; color:#4a3238; margin-bottom:6px; }
-  .card-body p{ font-size:0.85rem; color:var(--rosa-oscuro); line-height:1.5; margin-bottom:14px; min-height:38px; }
+  .card-body p{ font-size:0.85rem; color:var(--rosa-oscuro); line-height:1.5; margin-bottom:14px; }
 
-  .card-footer{ display:flex; align-items:center; justify-content:space-between; }
+  .card-footer{ display:flex; align-items:center; justify-content:space-between; margin-top:auto; }
   .price{ font-weight:700; color:var(--rosa-principal); font-size:1.1rem; font-family:var(--font-body); }
 
   .add-btn{
@@ -306,6 +317,74 @@
     .cart-panel.open{ transform:translateY(0); }
   }
 
+  /* ===== Modal de producto ===== */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,0.4);
+    backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+    z-index:1700; opacity:0; pointer-events:none; transition:opacity 0.25s;
+  }
+  .modal-overlay.open{ opacity:1; pointer-events:auto; }
+
+  .product-modal{
+    position:fixed; top:50%; left:50%;
+    transform:translate(-50%,-50%) scale(0.92);
+    width:480px; max-width:92vw; max-height:88vh; overflow-y:auto;
+    background:var(--blanco); border-radius:20px;
+    z-index:1800; opacity:0; pointer-events:none;
+    transition:opacity 0.25s ease, transform 0.25s ease;
+    box-shadow:0 20px 60px rgba(0,0,0,0.25);
+  }
+  .product-modal.open{ opacity:1; pointer-events:auto; transform:translate(-50%,-50%) scale(1); }
+
+  .modal-drag-handle{
+    display:none; width:44px; height:5px; border-radius:100px;
+    background:var(--rosa-medio); margin:10px auto 0;
+  }
+
+  .modal-close{
+    position:absolute; top:16px; right:16px; z-index:2;
+    width:38px; height:38px; border-radius:50%; border:none;
+    background:rgba(255,255,255,0.9); color:var(--rosa-oscuro);
+    font-size:1.2rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
+    box-shadow:0 2px 10px rgba(0,0,0,0.15);
+    transition:background 0.2s, transform 0.2s;
+  }
+  .modal-close:hover{ background:var(--rosa-principal); color:#fff; transform:scale(1.06); }
+
+  .modal-img{ width:100%; height:300px; object-fit:cover; display:block; background:var(--rosa-medio); }
+  .modal-img.placeholder{ display:flex; align-items:center; justify-content:center; }
+  .modal-img.placeholder svg{ width:80px; height:80px; opacity:0.55; }
+
+  .modal-body{ padding:26px 28px 30px; }
+  .modal-body h3{ font-size:1.8rem; color:#4a3238; margin-bottom:10px; }
+  .modal-body p.modal-desc{ font-size:0.95rem; color:var(--rosa-oscuro); line-height:1.6; margin-bottom:20px; }
+  .modal-price{ font-weight:700; color:var(--rosa-principal); font-size:1.5rem; font-family:var(--font-body); margin-bottom:24px; display:block; }
+
+  .modal-actions{ display:flex; align-items:center; gap:16px; }
+  .modal-qty{
+    display:flex; align-items:center; gap:14px;
+    background:var(--rosa-claro); border-radius:100px; padding:6px 10px;
+  }
+  .modal-qty button{
+    width:34px; height:34px; border-radius:50%; border:none; background:var(--rosa-principal);
+    color:#fff; font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
+    transition:background 0.2s;
+  }
+  .modal-qty button:hover{ background:var(--rosa-oscuro); }
+  .modal-qty span{ min-width:20px; text-align:center; font-weight:600; font-size:1rem; }
+
+  .modal-add-btn{
+    flex:1; background:var(--rosa-principal); color:#fff; border:none;
+    padding:15px; border-radius:100px; font-family:var(--font-body); font-weight:600;
+    font-size:0.95rem; cursor:pointer; transition:background 0.2s, transform 0.2s;
+  }
+  .modal-add-btn:hover{ background:var(--rosa-oscuro); transform:translateY(-2px); }
+
+  @media (max-width:640px){
+    .product-modal{ width:95%; max-width:95vw; }
+    .modal-drag-handle{ display:block; }
+  }
+
   /* ===== Floating WhatsApp ===== */
   .fab-whatsapp{
     position:fixed; bottom:24px; right:24px; z-index:1400;
@@ -323,7 +402,16 @@
     padding:56px 24px 30px; text-align:center;
   }
   footer .logo{ justify-content:center; margin-bottom:18px; }
-  footer .tagline{ font-weight:300; font-size:0.95rem; max-width:400px; margin:0 auto 22px; line-height:1.6; opacity:0.95; }
+  footer .tagline{ font-weight:300; font-size:0.95rem; max-width:400px; margin:0 auto 20px; line-height:1.6; opacity:0.95; }
+
+  .footer-info{
+    display:flex; flex-wrap:wrap; align-items:center; justify-content:center;
+    gap:10px 22px; margin-bottom:24px; font-size:0.85rem; font-weight:300; opacity:0.95;
+  }
+  .footer-info a{ transition:opacity 0.2s; }
+  .footer-info a:hover{ opacity:0.75; text-decoration:underline; }
+  .footer-info span{ display:inline-flex; align-items:center; gap:6px; }
+
   .footer-social{
     display:inline-flex; align-items:center; justify-content:center;
     width:42px; height:42px; border-radius:50%; border:1.5px solid rgba(255,255,255,0.5);
@@ -357,8 +445,11 @@
 <header>
   <div class="container">
     <div class="logo">
-      <svg viewBox="0 0 24 24"><path fill="#e07e90" d="M12 2a10 10 0 1 0 9.8 12 8 8 0 0 1-9.8-12z"/></svg>
-      <span class="logo-text">Luna Rosa<small>Heladería Artesanal</small></span>
+      <img class="logo-img" src="Recursos/LUNAROSA2PNG-trim.png" alt="Luna Rosa" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+      <span class="logo-text-fallback">
+        <svg viewBox="0 0 24 24"><path fill="#e07e90" d="M12 2a10 10 0 1 0 9.8 12 8 8 0 0 1-9.8-12z"/></svg>
+        <span class="logo-text">Luna Rosa<small>Heladería Artesanal</small></span>
+      </span>
     </div>
     <button class="cart-btn" id="cartBtn" aria-label="Abrir carrito">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
@@ -385,7 +476,7 @@
     <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 9.8 12 8 8 0 0 1-9.8-12z"/></svg>
   </div>
 
-  <p class="hero-eyebrow">Cúcuta · Helados hechos a mano</p>
+  <p class="hero-eyebrow">Los Patios · Helados hechos a mano</p>
   <h1>Luna Rosa</h1>
   <p class="tagline">Cada bola de helado es una pequeña luna llena de dulzura — artesanal, fresca y hecha para saborearse despacio, bajo el cielo de una tarde cualquiera.</p>
   <div class="hero-cta">
@@ -429,6 +520,14 @@
   </div>
 </aside>
 
+<!-- ===== MODAL DE PRODUCTO ===== -->
+<div class="modal-overlay" id="modalOverlay"></div>
+<div class="product-modal" id="productModal">
+  <div class="modal-drag-handle" id="modalDragHandle"></div>
+  <button class="modal-close" id="modalClose" aria-label="Cerrar">✕</button>
+  <div id="modalContent"></div>
+</div>
+
 <!-- ===== WHATSAPP FLOTANTE ===== -->
 <a class="fab-whatsapp" href="https://wa.me/573125249438" target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp">
   <svg viewBox="0 0 32 32"><path d="M16 0C7.2 0 .1 7.1.1 15.9c0 2.8.7 5.5 2.1 7.9L0 32l8.4-2.2c2.3 1.3 4.9 1.9 7.6 1.9 8.8 0 15.9-7.1 15.9-15.9C31.9 7.1 24.8 0 16 0zm0 29c-2.4 0-4.7-.6-6.7-1.8l-.5-.3-5 1.3 1.3-4.9-.3-.5C3.2 21 2.5 18.5 2.5 15.9 2.5 8.5 8.5 2.5 16 2.5c7.4 0 13.4 6 13.4 13.4S23.4 29 16 29zm7.3-9.9c-.4-.2-2.4-1.2-2.7-1.3-.4-.1-.6-.2-.9.2-.3.4-1 1.3-1.2 1.5-.2.3-.4.3-.8.1-.4-.2-1.6-.6-3.1-1.9-1.1-1-1.9-2.2-2.1-2.6-.2-.4 0-.6.2-.8.2-.2.4-.4.5-.7.2-.2.2-.4.4-.6.1-.2.1-.5 0-.7-.1-.2-.9-2.2-1.2-3-.3-.8-.7-.7-.9-.7h-.8c-.2 0-.6.1-1 .5-.3.4-1.3 1.3-1.3 3.1 0 1.8 1.3 3.6 1.5 3.9.2.3 2.6 4 6.3 5.5.9.4 1.6.6 2.1.8.9.3 1.7.2 2.4.1.7-.1 2.4-1 2.7-1.9.3-.9.3-1.7.2-1.9-.1-.2-.3-.3-.7-.5z"/></svg>
@@ -437,11 +536,19 @@
 <!-- ===== FOOTER ===== -->
 <footer>
   <div class="logo blanco">
-    <svg viewBox="0 0 24 24"><path fill="#ffffff" d="M12 2a10 10 0 1 0 9.8 12 8 8 0 0 1-9.8-12z"/></svg>
-    <span class="logo-text">Luna Rosa<small>Heladería Artesanal</small></span>
+    <img class="logo-img" src="Recursos/LUNAROSABLANCO2PNG-trim.png" alt="Luna Rosa" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+    <span class="logo-text-fallback">
+      <svg viewBox="0 0 24 24"><path fill="#ffffff" d="M12 2a10 10 0 1 0 9.8 12 8 8 0 0 1-9.8-12z"/></svg>
+      <span class="logo-text">Luna Rosa<small>Heladería Artesanal</small></span>
+    </span>
   </div>
-  <p class="tagline">Endulzando tardes en Cúcuta con helados artesanales hechos con ingredientes frescos y mucho cariño.</p>
-  <a href="#" class="footer-social" aria-label="Instagram">
+  <p class="tagline">Endulzando tardes en Los Patios con helados artesanales hechos con ingredientes frescos y mucho cariño.</p>
+  <div class="footer-info">
+    <span>📍 Los Patios — Frente al coliseo del Km8</span>
+    <span>🕑 Todos los días de 2:00 PM a 9:30 PM</span>
+    <a href="https://instagram.com/lunarosakm8" target="_blank" rel="noopener">📸 @LUNAROSAKM8</a>
+  </div>
+  <a href="https://instagram.com/lunarosakm8" target="_blank" rel="noopener" class="footer-social" aria-label="Instagram">
     <svg viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.9.1 1.2.1 2 .3 2.4.5.6.2 1 .5 1.5 1 .4.4.7.9 1 1.5.2.4.4 1.2.5 2.4.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c-.1 1.2-.3 2-.5 2.4-.2.6-.5 1-1 1.5-.4.4-.9.7-1.5 1-.4.2-1.2.4-2.4.5-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2-.1-2-.3-2.4-.5-.6-.2-1-.5-1.5-1-.4-.4-.7-.9-1-1.5-.2-.4-.4-1.2-.5-2.4-.1-1.3-.1-1.7-.1-4.9s0-3.6.1-4.9c.1-1.2.3-2 .5-2.4.2-.6.5-1 1-1.5.4-.4.9-.7 1.5-1 .4-.2 1.2-.4 2.4-.5 1.3-.1 1.7-.1 4.9-.1M12 0C8.7 0 8.3 0 7 .1 5.7.1 4.7.3 4 .6c-.8.3-1.5.7-2.1 1.4C1.2 2.6.8 3.3.5 4.1.2 4.8 0 5.8 0 7.1 0 8.4 0 8.8 0 12s0 3.6.1 4.9c.1 1.3.2 2.3.5 3 .3.8.7 1.5 1.4 2.1.7.7 1.4 1.1 2.1 1.4.8.3 1.7.5 3 .5C8.4 24 8.8 24 12 24s3.6 0 4.9-.1c1.3-.1 2.3-.2 3-.5.8-.3 1.5-.7 2.1-1.4.7-.7 1.1-1.4 1.4-2.1.3-.8.5-1.7.5-3 .1-1.3.1-1.7.1-4.9s0-3.6-.1-4.9c-.1-1.3-.2-2.3-.5-3-.3-.8-.7-1.5-1.4-2.1-.7-.7-1.3-1.1-2.1-1.4-.8-.3-1.7-.5-3-.5C15.6 0 15.2 0 12 0z"/><path d="M12 5.8A6.2 6.2 0 1 0 12 18.2 6.2 6.2 0 0 0 12 5.8zm0 10.2a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"/><circle cx="18.4" cy="5.6" r="1.4"/></svg>
   </a>
   <p class="footer-made">Hecho con 🌙 y mucho amor</p>
@@ -575,9 +682,11 @@
     const add = e.target.closest(".add-btn");
     const minus = e.target.closest(".qty-minus");
     const plus = e.target.closest(".qty-plus");
-    if (add) changeQty(Number(add.dataset.id), 1);
-    else if (plus) changeQty(Number(plus.dataset.id), 1);
-    else if (minus) changeQty(Number(minus.dataset.id), -1);
+    if (add){ changeQty(Number(add.dataset.id), 1); return; }
+    if (plus){ changeQty(Number(plus.dataset.id), 1); return; }
+    if (minus){ changeQty(Number(minus.dataset.id), -1); return; }
+    const card = e.target.closest(".card");
+    if (card) openModal(Number(card.dataset.id));
   });
 
   function changeQty(id, delta){
@@ -611,15 +720,22 @@
   const cartTotalEl = document.getElementById("cartTotal");
   const whatsappBtn = document.getElementById("whatsappBtn");
 
+  function lockScroll(){ document.body.style.overflow = "hidden"; }
+  function unlockScroll(){
+    if (!cartPanel.classList.contains("open") && !productModal.classList.contains("open")){
+      document.body.style.overflow = "";
+    }
+  }
+
   function openCart(){
     cartPanel.classList.add("open");
     overlay.classList.add("open");
-    document.body.style.overflow = "hidden";
+    lockScroll();
   }
   function closeCart(){
     cartPanel.classList.remove("open");
     overlay.classList.remove("open");
-    document.body.style.overflow = "";
+    unlockScroll();
   }
   document.getElementById("cartBtn").addEventListener("click", openCart);
   document.getElementById("cartClose").addEventListener("click", closeCart);
@@ -711,6 +827,98 @@ ${lineas.join("\n")}
     window.open(url, "_blank");
   });
 
+  /* ===== MODAL DE PRODUCTO ===== */
+  const modalOverlay = document.getElementById("modalOverlay");
+  const productModal = document.getElementById("productModal");
+  const modalContent = document.getElementById("modalContent");
+  const modalDragHandle = document.getElementById("modalDragHandle");
+  let modalQty = 1;
+  let modalProdId = null;
+
+  function modalCardHTML(prod){
+    const src = imgSrc(prod);
+    const imgBlock = src
+      ? `<img class="modal-img" src="${src}" alt="${prod.nombre}" onerror="this.outerHTML='<div class=\\'modal-img placeholder\\'>${placeholderSVG()}</div>'">`
+      : `<div class="modal-img placeholder">${placeholderSVG()}</div>`;
+
+    return `
+      ${imgBlock}
+      <div class="modal-body">
+        <h3>${prod.nombre}</h3>
+        <p class="modal-desc">${prod.desc}</p>
+        <span class="modal-price">${formatCOP(prod.precio)}</span>
+        <div class="modal-actions">
+          <div class="modal-qty">
+            <button id="modalQtyMinus">−</button>
+            <span id="modalQtyValue">${modalQty}</span>
+            <button id="modalQtyPlus">+</button>
+          </div>
+          <button class="modal-add-btn" id="modalAddBtn">Agregar al carrito</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderModalQty(){
+    const el = document.getElementById("modalQtyValue");
+    if (el) el.textContent = modalQty;
+  }
+
+  function openModal(id){
+    const prod = productos.find(p => p.id === id);
+    if (!prod) return;
+    modalProdId = id;
+    modalQty = cart[id] || 1;
+    modalContent.innerHTML = modalCardHTML(prod);
+
+    document.getElementById("modalQtyMinus").addEventListener("click", () => {
+      modalQty = Math.max(1, modalQty - 1);
+      renderModalQty();
+    });
+    document.getElementById("modalQtyPlus").addEventListener("click", () => {
+      modalQty += 1;
+      renderModalQty();
+    });
+    document.getElementById("modalAddBtn").addEventListener("click", () => {
+      cart[modalProdId] = modalQty;
+      renderCardActions();
+      renderCart();
+      updateBadge(true);
+      closeModal();
+    });
+
+    productModal.classList.add("open");
+    modalOverlay.classList.add("open");
+    lockScroll();
+  }
+
+  function closeModal(){
+    productModal.classList.remove("open");
+    modalOverlay.classList.remove("open");
+    unlockScroll();
+  }
+
+  document.getElementById("modalClose").addEventListener("click", closeModal);
+  modalOverlay.addEventListener("click", closeModal);
+
+  /* Swipe hacia abajo para cerrar en móvil */
+  let touchStartY = null;
+  productModal.addEventListener("touchstart", (e) => {
+    touchStartY = e.touches[0].clientY;
+  }, { passive:true });
+  productModal.addEventListener("touchmove", (e) => {
+    if (touchStartY === null) return;
+    const deltaY = e.touches[0].clientY - touchStartY;
+    if (deltaY > 0) productModal.style.transform = `translate(-50%, calc(-50% + ${deltaY}px)) scale(1)`;
+  }, { passive:true });
+  productModal.addEventListener("touchend", (e) => {
+    if (touchStartY === null) return;
+    const deltaY = e.changedTouches[0].clientY - touchStartY;
+    productModal.style.transform = "";
+    if (deltaY > 90) closeModal();
+    touchStartY = null;
+  });
+
   /* ===== CATEGORY NAV ===== */
   const catPills = document.querySelectorAll(".cat-pill");
   catPills.forEach(pill => {
@@ -763,9 +971,12 @@ ${lineas.join("\n")}
     document.addEventListener("mouseleave", () => cursorMoon.classList.remove("active"));
   }
 
-  /* Cerrar carrito con Escape */
+  /* Cerrar carrito/modal con Escape */
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeCart();
+    if (e.key === "Escape"){
+      closeCart();
+      closeModal();
+    }
   });
 
 })();
