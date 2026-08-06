@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Luna Rosa · Heladería Artesanal</title>
-<meta name="description" content="Luna Rosa — helados artesanales hechos con amor. Conos, copas, waffles, frappes y más.">
+<title>Luna Rosa · Heladería</title>
+<meta name="description" content="Luna Rosa — helados hechos con amor. Conos, copas, waffles, frappes y más.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=GFS+Didot&family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -206,7 +206,8 @@
 
   .grid{
     display:grid; grid-template-columns:repeat(3, 1fr); grid-template-rows:auto;
-    align-items:stretch; gap:24px;
+    align-items:stretch; gap:20px;
+    max-width:1200px; margin:0 auto;
   }
   @media (max-width:900px){ .grid{ grid-template-columns:repeat(2,1fr); } }
   @media (max-width:600px){ .grid{ grid-template-columns:1fr; } }
@@ -224,7 +225,7 @@
   .card:hover{ transform:translateY(-4px); box-shadow:0 14px 34px rgba(224,126,144,0.24); }
 
   .card-img{
-    width:100%; height:220px; object-fit:cover; background:var(--rosa-medio); flex-shrink:0;
+    width:100%; height:200px; object-fit:cover; object-position:center; background:var(--rosa-medio); flex-shrink:0;
   }
   .card-img.placeholder{
     display:flex; align-items:center; justify-content:center;
@@ -470,7 +471,7 @@
       <img class="logo-img" src="Recursos/LUNAROSA2PNG-trim.png" alt="Luna Rosa" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
       <span class="logo-text-fallback">
         <svg viewBox="0 0 24 24"><path fill="#e07e90" d="M12 2a10 10 0 1 0 9.8 12 8 8 0 0 1-9.8-12z"/></svg>
-        <span class="logo-text">Luna Rosa<small>Heladería Artesanal</small></span>
+        <span class="logo-text">Luna Rosa<small>Heladería</small></span>
       </span>
     </div>
     <button class="cart-btn" id="cartBtn" aria-label="Abrir carrito">
@@ -498,9 +499,9 @@
     <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 9.8 12 8 8 0 0 1-9.8-12z"/></svg>
   </div>
 
-  <p class="hero-eyebrow">Los Patios · Helados hechos a mano</p>
+  <p class="hero-eyebrow">Los Patios · Helados hechos con amor</p>
   <img class="hero-logo" src="Recursos/LUNAROSAPNG.png" alt="Luna Rosa" onerror="this.outerHTML='<h1>Luna Rosa</h1>';">
-  <p class="tagline">Cada bola de helado es una pequeña luna llena de dulzura — artesanal, fresca y hecha para saborearse despacio, bajo el cielo de una tarde cualquiera.</p>
+  <p class="tagline">Cada bola de helado es una pequeña luna llena de dulzura — fresca y hecha para saborearse despacio, bajo el cielo de una tarde cualquiera.</p>
   <div class="hero-cta">
     <a href="#menu" class="btn-primary">Ver nuestro menú</a>
   </div>
@@ -561,10 +562,10 @@
     <img class="logo-img" src="Recursos/LUNAROSABLANCO2PNG-trim.png" alt="Luna Rosa" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
     <span class="logo-text-fallback">
       <svg viewBox="0 0 24 24"><path fill="#ffffff" d="M12 2a10 10 0 1 0 9.8 12 8 8 0 0 1-9.8-12z"/></svg>
-      <span class="logo-text">Luna Rosa<small>Heladería Artesanal</small></span>
+      <span class="logo-text">Luna Rosa<small>Heladería</small></span>
     </span>
   </div>
-  <p class="tagline">Endulzando tardes en Los Patios con helados artesanales hechos con ingredientes frescos y mucho cariño.</p>
+  <p class="tagline">Endulzando tardes en Los Patios con helados hechos con ingredientes frescos y mucho cariño.</p>
   <div class="footer-info">
     <span>📍 Los Patios — Frente al coliseo del Km8</span>
     <span>🕑 Todos los días de 2:00 PM a 9:30 PM</span>
@@ -583,8 +584,8 @@
 
   /* ===== DATA ===== */
   const productos = [
-    { id: 1, nombre: "Cono Sencillo", desc: "1 bola de helado artesanal a tu elección", precio: 4000, cat: "conos", img: null },
-    { id: 2, nombre: "Cono Doble", desc: "2 bolas de helado artesanal", precio: 7000, cat: "conos", img: null },
+    { id: 1, nombre: "Cono Sencillo", desc: "1 bola de helado a tu elección", precio: 4000, cat: "conos", img: null },
+    { id: 2, nombre: "Cono Doble", desc: "2 bolas de helado", precio: 7000, cat: "conos", img: null },
     { id: 3, nombre: "Canasta Doble", desc: "Dos bolas de helado con topping", precio: 8000, cat: "conos", img: null },
     { id: 4, nombre: "Canasta Triple", desc: "Tres bolas de helado con topping", precio: 12000, cat: "conos", img: null },
     { id: 5, nombre: "Canasta Luna", desc: "Dos bolas de helado con topping especial", precio: 14000, cat: "conos", img: "CANASTA ESPECIAL/DSC09919.jpg" },
@@ -595,7 +596,7 @@
     { id: 9, nombre: "Copa Cítrica", desc: "Helado con topping cítrico fresco", precio: 14000, cat: "copas", img: "COPA CITRICA/DSC09956.jpg" },
     { id: 10, nombre: "Araña", desc: "Helado a tu elección con topping especial", precio: 9000, cat: "copas", img: "ARAÑA/DSC00098.jpg" },
     { id: 11, nombre: "Bolw Luna Cream", desc: "Helado cremoso para disfrutar a cucharadas", precio: 18000, cat: "copas", img: "CUCHAREABLE/DSC00067.jpg" },
-    { id: 12, nombre: "Banana Cream", desc: "Banana fresca con helado artesanal", precio: 15000, cat: "copas", img: "BANANA SPLITT/DSC09822.jpg" },
+    { id: 12, nombre: "Banana Cream", desc: "Banana fresca con helado", precio: 15000, cat: "copas", img: "BANANA SPLITT/DSC09822.jpg" },
 
     { id: 13, nombre: "Luna Mariposa", desc: "Waffles con helado y topping", precio: 11000, cat: "waffles", img: "MARIPOSA/DSC00005.jpg" },
     { id: 14, nombre: "Waffle Fruti Luna", desc: "Waffle con topping y helado frutal", precio: 18000, cat: "waffles", img: "WAFFLE FRUTAL/DSC00119.jpg" },
@@ -607,7 +608,7 @@
     { id: 20, nombre: "Bubble Fruti", desc: "Bubble waffle con topping y fruta", precio: 18000, cat: "waffles", img: null },
 
     { id: 21, nombre: "Frappe Milo", desc: "Frappe cremoso con helado sabor Milo", precio: 15000, cat: "frappes", img: "FRAPPE DE MILO/DSC00248.jpg" },
-    { id: 22, nombre: "Malteada Luna", desc: "Malteada artesanal Luna Rosa", precio: 14000, cat: "frappes", img: "MALTEADA SENCILLA/DSC00149.jpg" },
+    { id: 22, nombre: "Malteada Luna", desc: "Malteada Luna Rosa", precio: 14000, cat: "frappes", img: "MALTEADA SENCILLA/DSC00149.jpg" },
     { id: 23, nombre: "Malteada Milk Shake", desc: "Milk shake premium con helado", precio: 16000, cat: "frappes", img: "MILL SHAKE/DSC00177.jpg" },
     { id: 24, nombre: "Maracumango", desc: "Frappe de maracuyá y mango con helado", precio: 14000, cat: "frappes", img: "MARACUMANGO/DSC00321.jpg" },
     { id: 25, nombre: "Maracumango sin Helado", desc: "Frappe de maracuyá y mango", precio: 10000, cat: "frappes", img: null },
@@ -647,6 +648,16 @@
     return prod.img ? RECURSOS_PATH + prod.img : null;
   }
 
+  /* Fallback de imagen: se hace vía DOM (no como HTML embebido en un atributo)
+     para evitar que las comillas del SVG rompan el parseo del onerror="..." */
+  window.lrImgFallback = function(imgEl, cls){
+    if (!imgEl || !imgEl.parentNode) return;
+    const div = document.createElement('div');
+    div.className = cls;
+    div.innerHTML = placeholderSVG();
+    imgEl.replaceWith(div);
+  };
+
   /* ===== RENDER MENU ===== */
   const menuContainer = document.getElementById("menuContainer");
 
@@ -656,7 +667,7 @@
       return `
         <section class="cat-block" id="cat-${cat.key}">
           <h2 class="cat-title">${cat.label}</h2>
-          <p class="cat-sub">${items.length} delicias artesanales</p>
+          <p class="cat-sub">${items.length} delicias para disfrutar</p>
           <div class="grid">
             ${items.map(cardHTML).join("")}
           </div>
@@ -668,7 +679,7 @@
   function cardHTML(prod){
     const src = imgSrc(prod);
     const imgBlock = src
-      ? `<img class="card-img" src="${src}" alt="${prod.nombre}" loading="lazy" onerror="this.outerHTML='<div class=\\'card-img placeholder\\'>${placeholderSVG()}</div>'">`
+      ? `<img class="card-img" src="${src}" alt="${prod.nombre}" loading="lazy" onerror="window.lrImgFallback(this,'card-img placeholder')">`
       : `<div class="card-img placeholder">${placeholderSVG()}</div>`;
 
     return `
@@ -784,7 +795,7 @@
       total += subtotal;
       const src = imgSrc(prod);
       const thumb = src
-        ? `<img src="${src}" alt="${prod.nombre}" onerror="this.outerHTML='<div class=\\'ci-placeholder\\'>${placeholderSVG()}</div>'">`
+        ? `<img src="${src}" alt="${prod.nombre}" onerror="window.lrImgFallback(this,'ci-placeholder')">`
         : `<div class="ci-placeholder">${placeholderSVG()}</div>`;
 
       return `
@@ -860,7 +871,7 @@ ${lineas.join("\n")}
   function modalCardHTML(prod){
     const src = imgSrc(prod);
     const imgBlock = src
-      ? `<img class="modal-img" src="${src}" alt="${prod.nombre}" onerror="this.outerHTML='<div class=\\'modal-img placeholder\\'>${placeholderSVG()}</div>'">`
+      ? `<img class="modal-img" src="${src}" alt="${prod.nombre}" onerror="window.lrImgFallback(this,'modal-img placeholder')">`
       : `<div class="modal-img placeholder">${placeholderSVG()}</div>`;
 
     return `
