@@ -74,6 +74,7 @@
     display:flex; align-items:center; justify-content:center;
     text-align:center; padding:8px 14px;
   }
+  .top-banner .bt{ display:-webkit-box; -webkit-line-clamp:2; line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
 
   /* ===== Header ===== */
   header{
@@ -234,6 +235,19 @@
     width:100%; height:100%; object-fit:contain; object-position:center; display:block;
   }
   .card-img-wrap.placeholder svg{ width:64px; height:64px; opacity:0.55; }
+  .card-img-wrap{ position:relative; }
+
+  /* Producto agotado: atenuado y con etiqueta, no se puede pedir */
+  .card.agotado .card-img-wrap, .card.agotado .card-body{ opacity:0.5; }
+  .card.agotado{ cursor:default; }
+  .agotado-tag{
+    position:absolute; top:12px; left:12px; z-index:1;
+    background:var(--rosa-oscuro); color:#fff; font-family:var(--font-body);
+    font-weight:600; font-size:0.72rem; letter-spacing:1px; text-transform:uppercase;
+    padding:5px 12px; border-radius:100px;
+  }
+  .add-btn:disabled{ background:var(--rosa-medio); cursor:not-allowed; transform:none; }
+  .menu-cargando{ text-align:center; color:var(--rosa-oscuro); padding:40px 0; font-size:0.95rem; }
 
   .card-body{
     padding:20px 22px 22px; flex:1;
@@ -328,6 +342,12 @@
   }
   .whatsapp-order-btn:hover{ background:var(--rosa-oscuro); transform:translateY(-2px); }
   .whatsapp-order-btn:disabled{ opacity:0.5; cursor:not-allowed; transform:none; }
+  .cart-aviso, .cart-nota{
+    margin-bottom:14px; padding:10px 14px; border-radius:12px; text-align:center;
+    background:var(--rosa-claro); border:1px solid var(--rosa-medio);
+    color:var(--rosa-oscuro); font-size:0.85rem; line-height:1.5;
+  }
+  .cart-aviso[hidden], .cart-nota[hidden]{ display:none; }
 
   @media (max-width:640px){
     .cart-panel{
@@ -408,6 +428,7 @@
     font-size:0.95rem; cursor:pointer; transition:background 0.2s, transform 0.2s;
   }
   .modal-add-btn:hover{ background:var(--rosa-oscuro); transform:translateY(-2px); }
+  .modal-add-btn:disabled{ background:var(--rosa-medio); cursor:not-allowed; transform:none; }
 
   @media (max-width:640px){
     .product-modal{ width:95%; max-width:95vw; }
@@ -471,7 +492,7 @@
 </svg>
 
 <!-- ===== BANNER DE HORARIO ===== -->
-<div class="top-banner">🌙 Atendemos todos los días de 2:00 PM a 9:30 PM · Los Patios, frente al coliseo del Km8 🍦</div>
+<div class="top-banner"><span class="bt" id="bannerTexto">🌙 Atendemos todos los días de 2:00 PM a 9:30 PM · Los Patios, frente al coliseo del Km8 🍦</span></div>
 
 <!-- ===== HEADER ===== -->
 <header>
@@ -519,14 +540,7 @@
 
 <!-- ===== MENÚ ===== -->
 <div class="cat-nav" id="catNav">
-  <div class="cat-nav-inner" id="catNavInner">
-    <button class="cat-pill active" data-cat="conos">🍦 Conos &amp; Canastas</button>
-    <button class="cat-pill" data-cat="copas">🍨 Copas &amp; Especiales</button>
-    <button class="cat-pill" data-cat="waffles">🧇 Waffles &amp; Bubbles</button>
-    <button class="cat-pill" data-cat="frappes">🥤 Frappes &amp; Malteadas</button>
-    <button class="cat-pill" data-cat="frutas">🍓 Ensaladas &amp; Frutas</button>
-    <button class="cat-pill" data-cat="bebidas">💧 Bebidas</button>
-  </div>
+  <div class="cat-nav-inner" id="catNavInner"><!-- las categorías se pintan desde los datos --></div>
 </div>
 
 <main id="menu" class="menu-section">
@@ -546,6 +560,8 @@
       <span>Total</span>
       <span id="cartTotal">$0</span>
     </div>
+    <div class="cart-nota" id="cartNota" hidden></div>
+    <div class="cart-aviso" id="cartAviso" hidden></div>
     <button class="whatsapp-order-btn" id="whatsappBtn" disabled>
       Pedir por WhatsApp 🛵
     </button>
@@ -577,7 +593,7 @@
   <p class="tagline">Endulzando tardes en Los Patios con helados hechos con ingredientes frescos y mucho cariño.</p>
   <div class="footer-info">
     <span>📍 Los Patios — Frente al coliseo del Km8</span>
-    <span>🕑 Todos los días de 2:00 PM a 9:30 PM</span>
+    <span id="footerHorario">🕑 Todos los días de 2:00 PM a 9:30 PM</span>
     <a href="https://instagram.com/lunarosakm8" target="_blank" rel="noopener">📸 @LUNAROSAKM8</a>
   </div>
   <a href="https://instagram.com/lunarosakm8" target="_blank" rel="noopener" class="footer-social" aria-label="Instagram">
@@ -587,101 +603,84 @@
   <p class="footer-copy">© Luna Rosa 2025 · Todos los derechos reservados</p>
 </footer>
 
+<script src="config.js"></script>
+<script src="menu-embebido.js"></script>
+<script src="menu-datos.js"></script>
 <script>
 (function(){
   "use strict";
 
   /* ===== DATA ===== */
-  const productos = [
-    { id: 1, nombre: "Cono Sencillo", desc: "1 bola de helado a tu elección", precio: 4000, cat: "conos", img: "Nuevas imagenes/Cono sencillo.jpeg" },
-    { id: 2, nombre: "Cono Doble", desc: "2 bolas de helado", precio: 7000, cat: "conos", img: "Nuevas imagenes/Cono doble.jpeg" },
-    { id: 3, nombre: "Canasta Doble", desc: "Dos bolas de helado con topping", precio: 8000, cat: "conos", img: "Nuevas imagenes/Canasta doble.jpeg" },
-    { id: 4, nombre: "Canasta Triple", desc: "Tres bolas de helado con topping", precio: 12000, cat: "conos", img: "Nuevas imagenes/Canasta triple.jpeg" },
-    { id: 5, nombre: "Canasta Luna", desc: "Dos bolas de helado con topping especial", precio: 14000, cat: "conos", img: "CANASTA ESPECIAL/DSC09919.jpg" },
-    { id: 6, nombre: "Pingui Helado", desc: "Helado en canasta con topping", precio: 7000, cat: "conos", img: "PINGUINO/DSC00031.jpg" },
-
-    { id: 7, nombre: "Copa Fresa", desc: "Helado con fresas frescas", precio: 14000, cat: "copas", img: "COPA FRESA CON QUESO/DSC09882.jpg" },
-    { id: 8, nombre: "Copa Choco Brownie", desc: "Tres bolas de helado con topping de brownie", precio: 13000, cat: "copas", img: "COPA BROWNIE/DSC09843.jpg" },
-    { id: 9, nombre: "Copa Cítrica", desc: "Helado con topping cítrico fresco", precio: 14000, cat: "copas", img: "COPA CITRICA/DSC09956.jpg" },
-    { id: 10, nombre: "Araña", desc: "Helado a tu elección con topping especial", precio: 9000, cat: "copas", img: "ARAÑA/DSC00098.jpg" },
-    { id: 11, nombre: "Bolw Luna Cream", desc: "Helado cremoso para disfrutar a cucharadas", precio: 18000, cat: "copas", img: "CUCHAREABLE/DSC00067.jpg" },
-    { id: 12, nombre: "Banana Cream", desc: "Banana fresca con helado", precio: 16000, cat: "copas", img: "BANANA SPLITT/DSC09822.jpg" },
-    { id: 35, nombre: "Brownie con Helado", desc: "Brownie de chocolate tibio con una bola de helado encima y salsa de chocolate — el equilibrio perfecto entre caliente y frío", precio: 10000, cat: "copas", img: "Nuevas imagenes/Brownie Con Helado.jpeg" },
-
-    { id: 13, nombre: "Luna Mariposa", desc: "Waffles con helado y topping", precio: 11000, cat: "waffles", img: "MARIPOSA/DSC00005.jpg" },
-    { id: 14, nombre: "Waffle Fruti Luna", desc: "Waffle con topping y helado frutal", precio: 18000, cat: "waffles", img: "WAFFLE FRUTAL/DSC00119.jpg" },
-    { id: 15, nombre: "Waffle Choco Cream", desc: "Waffle con topping de chocolate y helado", precio: 20000, cat: "waffles", img: "WAFFLE DULCE/DSC00357.jpg" },
-    { id: 16, nombre: "Waffle Solo Topping", desc: "Waffle con topping dulce, sin helado", precio: 18000, cat: "waffles", img: "Nuevas imagenes/Waffle solo topping.jpeg" },
-    { id: 17, nombre: "Bubble Dulce Explosión", desc: "Waffle bubble con topping dulce", precio: 20000, cat: "waffles", img: "BUBLE WAFFLE BISCOLATA/DSC00297.jpg" },
-    { id: 18, nombre: "Bubble sin Helado", desc: "Bubble waffle con topping, sin helado", precio: 18000, cat: "waffles", img: "Nuevas imagenes/Bubble sin Helado.jpeg" },
-    { id: 19, nombre: "Bubble Fruti Luna", desc: "Waffle bubble con topping, fruta y helado", precio: 20000, cat: "waffles", img: "WAFFLE CHOCOLATE FRUTAL/DSC00422.png" },
-
-    { id: 21, nombre: "Frappe Milo", desc: "Frappe cremoso con helado sabor Milo", precio: 15000, cat: "frappes", img: "FRAPPE DE MILO/DSC00248.jpg" },
-    { id: 36, nombre: "Milo", desc: "Bebida fría y cremosa sabor Milo con salsa de chocolate", precio: 12000, cat: "frappes", img: "Nuevas imagenes/Milo.jpeg" },
-    { id: 22, nombre: "Malteada Luna", desc: "Malteada Luna Rosa", precio: 14000, cat: "frappes", img: "MALTEADA SENCILLA/DSC00149.jpg" },
-    { id: 23, nombre: "Malteada Milk Shake", desc: "Milk shake premium con helado", precio: 16000, cat: "frappes", img: "MILL SHAKE/DSC00177.jpg" },
-    { id: 24, nombre: "Maracumango", desc: "Frappe de maracuyá y mango con helado", precio: 14000, cat: "frappes", img: "MARACUMANGO/DSC00321.jpg" },
-    { id: 25, nombre: "Maracumango sin Helado", desc: "Frappe de maracuyá y mango", precio: 10000, cat: "frappes", img: "Nuevas imagenes/Maracumango sin Helado.jpeg" },
-    { id: 26, nombre: "Fresada", desc: "Bebida de fresa fresca con helado", precio: 14000, cat: "frappes", img: "FRESADA/DSC00450.png" },
-
-    { id: 27, nombre: "Ensalada de Frutas Personal", desc: "Fruta a elección con topping especial", precio: 13000, cat: "frutas", img: "ENSALADA DE FRUTAS PERSONAL/DSC09782.png" },
-
-    { id: 28, nombre: "Agua Pura", desc: "Agua fría", precio: 2000, cat: "bebidas", img: "Bebidas/Agua pura.jpeg" },
-    { id: 29, nombre: "Sodas", desc: "Gaseosa a elección", precio: 10000, cat: "bebidas", img: "Nuevas imagenes/Sodas.jpeg" },
-    { id: 30, nombre: "Agua Cristal", desc: "Agua embotellada, fría y refrescante", precio: 2500, cat: "bebidas", img: "Bebidas/Agua cristal.jpg" },
-    { id: 31, nombre: "Agua Cristal Grande", desc: "Botella grande, ideal para compartir", precio: 3000, cat: "bebidas", img: "Bebidas/Agua cristal grande.jpg" },
-    { id: 32, nombre: "Soda Bretaña", desc: "Bebida con gas, sabor clásico", precio: 4000, cat: "bebidas", img: "Bebidas/Soda bretaña.webp" },
-    { id: 33, nombre: "Ginger", desc: "Refrescante sabor a jengibre", precio: 3500, cat: "bebidas", img: "Bebidas/Ginger.webp" },
-    { id: 34, nombre: "Agua Cielo con Gas", desc: "Agua con gas, fría y burbujeante", precio: 2500, cat: "bebidas", img: "Bebidas/Agua cielo con gas.png" },
-  ];
-
-  const categorias = [
-    { key:"conos", label:"🍦 Conos &amp; Canastas" },
-    { key:"copas", label:"🍨 Copas &amp; Especiales" },
-    { key:"waffles", label:"🧇 Waffles &amp; Bubbles" },
-    { key:"frappes", label:"🥤 Frappes &amp; Malteadas" },
-    { key:"frutas", label:"🍓 Ensaladas &amp; Frutas" },
-    { key:"bebidas", label:"💧 Bebidas" },
-  ];
+  /* El menú, los horarios y la configuración llegan de Supabase (menu-datos.js).
+     Sin conexión, o con Supabase sin configurar, se usa la última copia guardada
+     en el navegador y, como último recurso, el menú embebido. */
+  let categorias = [];
+  let productos = [];
+  let horarios = [];
+  let config = { horario_activo:false, cerrado_temporalmente:false, mensaje_cierre:null };
+  let datosJSON = "";
 
   const WHATSAPP_NUMBER = "573205589191";
-  const RECURSOS_PATH = "Recursos/";
+  const REFRESCO_MS = 60000;
+  const DIRECCION_BANNER = "Los Patios, frente al coliseo del Km8";
 
   /* ===== STATE ===== */
   const cart = {}; // { id: qty }
+  let ultimaCarga = 0;
 
   /* ===== HELPERS ===== */
   function formatCOP(n){
     return "$" + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   }
 
+  function esc(t){
+    return String(t == null ? "" : t)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
   function placeholderSVG(){
     return '<svg viewBox="0 0 24 24" fill="#e07e90"><path d="M12 2a10 10 0 1 0 9.8 12 8 8 0 0 1-9.8-12z"/></svg>';
   }
 
+  /* imagen_url puede ser relativa (del repo, "Recursos/...") o absoluta (Storage) */
   function imgSrc(prod){
-    return prod.img ? RECURSOS_PATH + prod.img : null;
+    return prod.imagen_url ? String(prod.imagen_url) : null;
+  }
+
+  function prodPorId(id){
+    return productos.find(p => p.id === Number(id));
   }
 
   /* Fallback de imagen: se hace vía DOM (no como HTML embebido en un atributo)
      para evitar que las comillas del SVG rompan el parseo del onerror="..." */
   window.lrImgFallback = function(imgEl, cls){
     if (!imgEl || !imgEl.parentNode) return;
+    const tag = imgEl.querySelector ? imgEl.querySelector(".agotado-tag") : null;
     const div = document.createElement('div');
     div.className = cls;
     div.innerHTML = placeholderSVG();
+    if (tag) div.prepend(tag.cloneNode(true));
     imgEl.replaceWith(div);
   };
 
   /* ===== RENDER MENU ===== */
   const menuContainer = document.getElementById("menuContainer");
+  const catNavInner = document.getElementById("catNavInner");
+
+  function productosDe(catId){
+    return productos.filter(p => p.categoria_id === catId);
+  }
 
   function renderMenu(){
-    menuContainer.innerHTML = categorias.map(cat => {
-      const items = productos.filter(p => p.cat === cat.key);
+    /* una categoría sin productos no se muestra */
+    const cats = categorias.filter(c => productosDe(c.id).length > 0);
+
+    menuContainer.innerHTML = cats.map(cat => {
+      const items = productosDe(cat.id);
       return `
-        <section class="cat-block" id="cat-${cat.key}">
-          <h2 class="cat-title">${cat.label}</h2>
+        <section class="cat-block" id="cat-${cat.id}">
+          <h2 class="cat-title">${esc(cat.nombre)}</h2>
           <p class="cat-sub">${items.length} delicias para disfrutar</p>
           <div class="grid">
             ${items.map(cardHTML).join("")}
@@ -689,20 +688,26 @@
         </section>
       `;
     }).join("");
+
+    catNavInner.innerHTML = cats.map((cat, i) =>
+      `<button class="cat-pill${i === 0 ? " active" : ""}" data-cat="${cat.id}">${esc(cat.nombre)}</button>`
+    ).join("");
   }
 
   function cardHTML(prod){
+    const agotado = prod.disponible === false;
+    const tag = agotado ? '<span class="agotado-tag">Agotado</span>' : "";
     const src = imgSrc(prod);
     const imgBlock = src
-      ? `<div class="card-img-wrap"><img class="card-img" src="${src}" alt="${prod.nombre}" loading="lazy" onerror="window.lrImgFallback(this.parentElement,'card-img-wrap placeholder')"></div>`
-      : `<div class="card-img-wrap placeholder">${placeholderSVG()}</div>`;
+      ? `<div class="card-img-wrap">${tag}<img class="card-img" src="${esc(src)}" alt="${esc(prod.nombre)}" loading="lazy" onerror="window.lrImgFallback(this.parentElement,'card-img-wrap placeholder')"></div>`
+      : `<div class="card-img-wrap placeholder">${tag}${placeholderSVG()}</div>`;
 
     return `
-      <article class="card" data-id="${prod.id}">
+      <article class="card${agotado ? " agotado" : ""}" data-id="${prod.id}">
         ${imgBlock}
         <div class="card-body">
-          <h3>${prod.nombre}</h3>
-          <p>${prod.desc}</p>
+          <h3>${esc(prod.nombre)}</h3>
+          <p>${esc(prod.descripcion)}</p>
           <div class="card-footer">
             <span class="price">${formatCOP(prod.precio)}</span>
             <div class="card-action" data-id="${prod.id}"></div>
@@ -716,6 +721,11 @@
     document.querySelectorAll(".card-action").forEach(el => {
       const id = Number(el.dataset.id);
       const qty = cart[id] || 0;
+      const prod = prodPorId(id);
+      if (prod && prod.disponible === false){
+        el.innerHTML = `<button class="add-btn" disabled aria-label="Agotado">+</button>`;
+        return;
+      }
       el.innerHTML = qty === 0
         ? `<button class="add-btn" data-id="${id}">+</button>`
         : `<div class="qty-control">
@@ -738,6 +748,8 @@
   });
 
   function changeQty(id, delta){
+    const prod = prodPorId(id);
+    if (delta > 0 && (!prod || prod.disponible === false)) return;
     const current = cart[id] || 0;
     const next = Math.max(0, current + delta);
     if (next === 0) delete cart[id];
@@ -781,6 +793,7 @@
     lockScroll();
   }
   function closeCart(){
+    cartNota.hidden = true;
     cartPanel.classList.remove("open");
     overlay.classList.remove("open");
     unlockScroll();
@@ -789,7 +802,18 @@
   document.getElementById("cartClose").addEventListener("click", closeCart);
   overlay.addEventListener("click", closeCart);
 
+  /* Quita del carrito lo que ya no existe o quedó agotado. Devuelve cuántos quitó. */
+  function podarCarrito(){
+    let quitados = 0;
+    Object.keys(cart).forEach(id => {
+      const prod = prodPorId(id);
+      if (!prod || prod.disponible === false){ delete cart[id]; quitados++; }
+    });
+    return quitados;
+  }
+
   function renderCart(){
+    podarCarrito();
     const ids = Object.keys(cart);
     if (ids.length === 0){
       cartItemsEl.innerHTML = `
@@ -798,26 +822,26 @@
           <p>Tu carrito está vacío.<br>¡Elige algo dulce! 🍦</p>
         </div>`;
       cartTotalEl.textContent = formatCOP(0);
-      whatsappBtn.disabled = true;
+      actualizarBotonPedido();
       return;
     }
 
     let total = 0;
     cartItemsEl.innerHTML = ids.map(id => {
-      const prod = productos.find(p => p.id === Number(id));
+      const prod = prodPorId(id);
       const qty = cart[id];
       const subtotal = prod.precio * qty;
       total += subtotal;
       const src = imgSrc(prod);
       const thumb = src
-        ? `<img src="${src}" alt="${prod.nombre}" onerror="window.lrImgFallback(this,'ci-placeholder')">`
+        ? `<img src="${esc(src)}" alt="${esc(prod.nombre)}" onerror="window.lrImgFallback(this,'ci-placeholder')">`
         : `<div class="ci-placeholder">${placeholderSVG()}</div>`;
 
       return `
         <div class="cart-item" data-id="${prod.id}">
           ${thumb}
           <div class="ci-info">
-            <h4>${prod.nombre}</h4>
+            <h4>${esc(prod.nombre)}</h4>
             <div class="ci-sub">${formatCOP(prod.precio)} c/u · Subtotal ${formatCOP(subtotal)}</div>
             <div class="ci-controls">
               <button class="ci-minus" data-id="${prod.id}">−</button>
@@ -831,7 +855,7 @@
     }).join("");
 
     cartTotalEl.textContent = formatCOP(total);
-    whatsappBtn.disabled = false;
+    actualizarBotonPedido();
   }
 
   cartItemsEl.addEventListener("click", (e) => {
@@ -850,12 +874,14 @@
 
   /* ===== WHATSAPP ===== */
   whatsappBtn.addEventListener("click", () => {
+    if (estadoLocal().cerrado) return;
+    podarCarrito();
     const ids = Object.keys(cart);
     if (ids.length === 0) return;
 
     let total = 0;
     const lineas = ids.map(id => {
-      const prod = productos.find(p => p.id === Number(id));
+      const prod = prodPorId(id);
       const qty = cart[id];
       const subtotal = prod.precio * qty;
       total += subtotal;
@@ -886,23 +912,29 @@ ${lineas.join("\n")}
   function modalCardHTML(prod){
     const src = imgSrc(prod);
     const imgBlock = src
-      ? `<div class="modal-img-wrap"><img class="modal-img" src="${src}" alt="${prod.nombre}" onerror="window.lrImgFallback(this.parentElement,'modal-img-wrap placeholder')"></div>`
+      ? `<div class="modal-img-wrap"><img class="modal-img" src="${esc(src)}" alt="${esc(prod.nombre)}" onerror="window.lrImgFallback(this.parentElement,'modal-img-wrap placeholder')"></div>`
       : `<div class="modal-img-wrap placeholder">${placeholderSVG()}</div>`;
 
-    return `
-      ${imgBlock}
-      <div class="modal-body">
-        <h3>${prod.nombre}</h3>
-        <p class="modal-desc">${prod.desc}</p>
-        <span class="modal-price">${formatCOP(prod.precio)}</span>
-        <div class="modal-actions">
+    const acciones = prod.disponible === false
+      ? `<div class="modal-actions">
+          <button class="modal-add-btn" disabled>Agotado</button>
+        </div>`
+      : `<div class="modal-actions">
           <div class="modal-qty">
             <button id="modalQtyMinus">−</button>
             <span id="modalQtyValue">${modalQty}</span>
             <button id="modalQtyPlus">+</button>
           </div>
           <button class="modal-add-btn" id="modalAddBtn">Agregar al carrito</button>
-        </div>
+        </div>`;
+
+    return `
+      ${imgBlock}
+      <div class="modal-body">
+        <h3>${esc(prod.nombre)}</h3>
+        <p class="modal-desc">${esc(prod.descripcion)}</p>
+        <span class="modal-price">${formatCOP(prod.precio)}</span>
+        ${acciones}
       </div>
     `;
   }
@@ -913,27 +945,32 @@ ${lineas.join("\n")}
   }
 
   function openModal(id){
-    const prod = productos.find(p => p.id === id);
+    const prod = prodPorId(id);
     if (!prod) return;
     modalProdId = id;
     modalQty = cart[id] || 1;
     modalContent.innerHTML = modalCardHTML(prod);
 
-    document.getElementById("modalQtyMinus").addEventListener("click", () => {
-      modalQty = Math.max(1, modalQty - 1);
-      renderModalQty();
-    });
-    document.getElementById("modalQtyPlus").addEventListener("click", () => {
-      modalQty += 1;
-      renderModalQty();
-    });
-    document.getElementById("modalAddBtn").addEventListener("click", () => {
-      cart[modalProdId] = modalQty;
-      renderCardActions();
-      renderCart();
-      updateBadge(true);
-      closeModal();
-    });
+    if (prod.disponible !== false){
+      document.getElementById("modalQtyMinus").addEventListener("click", () => {
+        modalQty = Math.max(1, modalQty - 1);
+        renderModalQty();
+      });
+      document.getElementById("modalQtyPlus").addEventListener("click", () => {
+        modalQty += 1;
+        renderModalQty();
+      });
+      document.getElementById("modalAddBtn").addEventListener("click", () => {
+        const actual = prodPorId(modalProdId);
+        if (actual && actual.disponible !== false){
+          cart[modalProdId] = modalQty;
+          renderCardActions();
+          renderCart();
+          updateBadge(true);
+        }
+        closeModal();
+      });
+    }
 
     productModal.classList.add("open");
     modalOverlay.classList.add("open");
@@ -968,23 +1005,162 @@ ${lineas.join("\n")}
   });
 
   /* ===== CATEGORY NAV ===== */
-  const catPills = document.querySelectorAll(".cat-pill");
-  catPills.forEach(pill => {
-    pill.addEventListener("click", () => {
-      const target = document.getElementById("cat-" + pill.dataset.cat);
-      if (target) target.scrollIntoView({ behavior:"smooth", block:"start" });
-    });
+  catNavInner.addEventListener("click", (e) => {
+    const pill = e.target.closest(".cat-pill");
+    if (!pill) return;
+    const target = document.getElementById("cat-" + pill.dataset.cat);
+    if (target) target.scrollIntoView({ behavior:"smooth", block:"start" });
   });
 
   function setActivePill(catKey){
-    catPills.forEach(p => p.classList.toggle("active", p.dataset.cat === catKey));
+    catNavInner.querySelectorAll(".cat-pill").forEach(p => p.classList.toggle("active", p.dataset.cat === catKey));
   }
 
-  /* ===== INIT ===== */
-  renderMenu();
-  renderCardActions();
-  renderCart();
+  /* ===== HORARIOS (siempre en hora de Colombia) =====
+     Solo se usan si config.horario_activo es true. Un cierre menor o igual a la
+     apertura significa que el local cierra pasada la medianoche. */
+  const DIAS = ["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
+  const DIAS_CORTOS = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
+  const DIA_POR_ABREV = { Sun:0, Mon:1, Tue:2, Wed:3, Thu:4, Fri:5, Sat:6 };
 
+  const bannerTexto = document.getElementById("bannerTexto");
+  const footerHorario = document.getElementById("footerHorario");
+  const cartAviso = document.getElementById("cartAviso");
+  const cartNota = document.getElementById("cartNota");
+  const BANNER_ORIGINAL = bannerTexto.textContent;
+  const FOOTER_ORIGINAL = footerHorario.textContent;
+  const BTN_TEXTO = whatsappBtn.textContent.trim();
+
+  let fmtBogota = null;
+  try{
+    fmtBogota = new Intl.DateTimeFormat("en-US", { timeZone:"America/Bogota", weekday:"short", hour:"2-digit", minute:"2-digit", hourCycle:"h23" });
+  }catch(e){}
+
+  function ahoraBogota(){
+    if (!fmtBogota){
+      /* respaldo: Colombia es UTC-5 todo el año, sin horario de verano */
+      const d = new Date(Date.now() - 5 * 3600 * 1000);
+      return { dia:d.getUTCDay(), min:d.getUTCHours() * 60 + d.getUTCMinutes() };
+    }
+    const o = {};
+    fmtBogota.formatToParts(new Date()).forEach(p => { o[p.type] = p.value; });
+    return { dia:DIA_POR_ABREV[o.weekday], min:(Number(o.hour) % 24) * 60 + Number(o.minute) };
+  }
+
+  function aMin(t){
+    const m = /^(\d{1,2}):(\d{2})/.exec(String(t == null ? "" : t));
+    return m ? Number(m[1]) * 60 + Number(m[2]) : null;
+  }
+
+  function fmtHora(t){
+    const m = aMin(t);
+    if (m === null) return "";
+    let h = Math.floor(m / 60);
+    const mm = m % 60;
+    const ap = h >= 12 ? "PM" : "AM";
+    h = h % 12 || 12;
+    return h + ":" + String(mm).padStart(2, "0") + " " + ap;
+  }
+
+  /* { abierto, cierra } si está abierto; { abierto:false, proxima } si no */
+  function estadoHorario(ahora){
+    const porDia = {};
+    horarios.forEach(h => { porDia[h.dia_semana] = h; });
+    const hoy = porDia[ahora.dia];
+    const ayer = porDia[(ahora.dia + 6) % 7];
+
+    /* el turno de ayer que cruzó la medianoche */
+    if (ayer && !ayer.cerrado){
+      const a = aMin(ayer.abre), c = aMin(ayer.cierra);
+      if (a !== null && c !== null && c <= a && ahora.min < c) return { abierto:true, cierra:ayer.cierra };
+    }
+    if (hoy && !hoy.cerrado){
+      const a = aMin(hoy.abre), c = aMin(hoy.cierra);
+      if (a !== null && c !== null){
+        if (c > a){
+          if (ahora.min >= a && ahora.min < c) return { abierto:true, cierra:hoy.cierra };
+        } else if (ahora.min >= a){
+          return { abierto:true, cierra:hoy.cierra };
+        }
+      }
+    }
+    for (let off = 0; off <= 7; off++){
+      const d = (ahora.dia + off) % 7;
+      const h = porDia[d];
+      if (!h || h.cerrado) continue;
+      const a = aMin(h.abre);
+      if (a === null) continue;
+      if (off === 0 && a <= ahora.min) continue;
+      return { abierto:false, proxima:{ off:off, dia:d, abre:h.abre } };
+    }
+    return { abierto:false, proxima:null };
+  }
+
+  function cuando(p){
+    const hora = "a las " + fmtHora(p.abre);
+    if (p.off === 0) return "hoy " + hora;
+    if (p.off === 1) return "mañana " + hora;
+    return "el " + DIAS[p.dia] + " " + hora;
+  }
+
+  /* Estado que usa toda la página. activo=false => nada aparece ni bloquea. */
+  function estadoLocal(){
+    if (!config.horario_activo || !horarios.length) return { activo:false, cerrado:false };
+    if (config.cerrado_temporalmente){
+      const msg = String(config.mensaje_cierre || "").trim() || "Cerrado temporalmente";
+      return { activo:true, cerrado:true, temporal:true, texto:msg, boton:"Cerrado temporalmente" };
+    }
+    const e = estadoHorario(ahoraBogota());
+    if (e.abierto) return { activo:true, cerrado:false, texto:"Abierto ahora · cierra a las " + fmtHora(e.cierra) };
+    const texto = "Cerrado" + (e.proxima ? " · abrimos " + cuando(e.proxima) : "");
+    return { activo:true, cerrado:true, texto:texto, boton:texto };
+  }
+
+  /* "Todos los días de 2:00 PM a 9:30 PM"  o  "Lun a Vie: ... · Sáb: ... · Dom: cerrado" */
+  function resumenSemana(){
+    const porDia = {};
+    horarios.forEach(h => { porDia[h.dia_semana] = h; });
+    const firma = (d) => {
+      const h = porDia[d];
+      return (!h || h.cerrado) ? "cerrado" : fmtHora(h.abre) + " a " + fmtHora(h.cierra);
+    };
+    const grupos = [];
+    [1,2,3,4,5,6,0].forEach(d => {
+      const f = firma(d), g = grupos[grupos.length - 1];
+      if (g && g.f === f) g.dias.push(d);
+      else grupos.push({ f:f, dias:[d] });
+    });
+    if (grupos.length === 1) return grupos[0].f === "cerrado" ? "Cerrado" : "Todos los días de " + grupos[0].f;
+    return grupos.map(g => {
+      const n = g.dias.length === 1
+        ? DIAS_CORTOS[g.dias[0]]
+        : DIAS_CORTOS[g.dias[0]] + " a " + DIAS_CORTOS[g.dias[g.dias.length - 1]];
+      return n + ": " + g.f;
+    }).join(" · ");
+  }
+
+  function actualizarBotonPedido(){
+    const e = estadoLocal();
+    whatsappBtn.disabled = Object.keys(cart).length === 0 || e.cerrado;
+    whatsappBtn.textContent = e.cerrado ? e.boton : BTN_TEXTO;
+  }
+
+  function aplicarHorario(){
+    const e = estadoLocal();
+    if (!e.activo){
+      bannerTexto.textContent = BANNER_ORIGINAL;
+      footerHorario.textContent = FOOTER_ORIGINAL;
+      cartAviso.hidden = true;
+    } else {
+      bannerTexto.textContent = "🌙 " + e.texto + (e.temporal ? "" : " · " + DIRECCION_BANNER + " 🍦");
+      footerHorario.textContent = "🕑 " + resumenSemana();
+      cartAviso.textContent = !e.cerrado ? "" : e.temporal ? e.texto : "Por ahora estamos cerrados. Podrás enviar tu pedido cuando abramos.";
+      cartAviso.hidden = !e.cerrado;
+    }
+    actualizarBotonPedido();
+  }
+
+  /* ===== OBSERVERS ===== */
   /* Fade-in de cards con IntersectionObserver */
   const cardObserver = new IntersectionObserver((entries) => {
     entries.forEach((entry, i) => {
@@ -995,10 +1171,8 @@ ${lineas.join("\n")}
       }
     });
   }, { threshold:0.15 });
-  document.querySelectorAll(".card").forEach(c => cardObserver.observe(c));
 
   /* Sección activa en nav de categorías */
-  const catSections = document.querySelectorAll(".cat-block");
   const sectionObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting){
@@ -1006,7 +1180,83 @@ ${lineas.join("\n")}
       }
     });
   }, { threshold:0.3, rootMargin:"-160px 0px -60% 0px" });
-  catSections.forEach(s => sectionObserver.observe(s));
+
+  function observarMenu(mostrarYa){
+    cardObserver.disconnect();
+    sectionObserver.disconnect();
+    document.querySelectorAll(".card").forEach(c => {
+      if (mostrarYa) c.classList.add("visible");
+      else cardObserver.observe(c);
+    });
+    document.querySelectorAll(".cat-block").forEach(s => sectionObserver.observe(s));
+  }
+
+  /* ===== CARGA DE DATOS ===== */
+  function aplicarDatos(d){
+    const json = JSON.stringify(d);
+    if (json === datosJSON) return;           // nada cambió: no se vuelve a pintar
+    const primera = datosJSON === "";
+    datosJSON = json;
+
+    categorias = d.categorias.slice().sort((a, b) => (a.orden - b.orden) || (a.id - b.id));
+    productos = d.productos.slice().sort((a, b) => (a.orden - b.orden) || (a.id - b.id));
+    horarios = d.horarios;
+    config = d.configuracion;
+
+    const quitados = podarCarrito();
+    renderMenu();
+    renderCardActions();
+    renderCart();
+    updateBadge(false);
+    observarMenu(!primera);
+    aplicarHorario();
+
+    if (quitados > 0){
+      cartNota.textContent = "Quitamos de tu pedido productos que ya no están disponibles.";
+      cartNota.hidden = false;
+    }
+  }
+
+  const DATOS = window.LR_DATOS;
+  let cargando = false;
+
+  function usarRespaldo(){
+    if (datosJSON !== "") return;
+    const d = (DATOS && DATOS.embebido()) || window.LR_MENU_EMBEBIDO;
+    if (d) aplicarDatos(d);
+    else menuContainer.innerHTML = '<p class="menu-cargando">No pudimos cargar el menú. Escríbenos por WhatsApp 🌙</p>';
+  }
+
+  function refrescar(){
+    if (cargando || !DATOS || !DATOS.configurado) return;
+    cargando = true;
+    DATOS.desdeRed()
+      .then(aplicarDatos)
+      .catch(usarRespaldo)
+      .then(() => { cargando = false; ultimaCarga = Date.now(); });
+  }
+
+  function arrancar(){
+    if (!DATOS || !DATOS.configurado){          // sin Supabase: menú embebido, cero peticiones
+      usarRespaldo();
+      return;
+    }
+    const copia = DATOS.cache();
+    if (copia) aplicarDatos(copia);
+    else menuContainer.innerHTML = '<p class="menu-cargando">Cargando menú…</p>';
+    refrescar();
+  }
+
+  /* ===== INIT ===== */
+  renderCart();
+  arrancar();
+
+  /* Al volver a la pestaña, si pasó más de 60 s, se refresca */
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && Date.now() - ultimaCarga > REFRESCO_MS) refrescar();
+  });
+  /* El estado abierto/cerrado se recalcula solo con el paso del tiempo */
+  setInterval(aplicarHorario, 30000);
 
   /* Cursor personalizado (desktop) */
   const cursorMoon = document.getElementById("cursorMoon");
