@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Panel · Luna Rosa</title>
+<link rel="icon" type="image/png" href="Recursos/LUNAROSAHELADOPNG.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=GFS+Didot&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --rosa-principal:#e07e90;
+    --rosa-medio:#f1bfc4;
+    --rosa-claro:#f7e0df;
+    --rosa-oscuro:#c37280;
+    --dorado:#bd8752;
+    --texto:#4a3238;
+    --suave:#8a5a63;
+    --peligro:#a63d4a;
+    --ok:#4f8a5f;
+    --font-display:'GFS Didot', serif;
+    --font-body:'Montserrat', sans-serif;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html{ -webkit-text-size-adjust:100%; }
+  body{
+    font-family:var(--font-body); font-weight:400; color:var(--texto);
+    background:var(--rosa-claro); min-height:100vh; line-height:1.45;
+    overflow-x:hidden;
+  }
+  body.sin-scroll{ overflow:hidden; }
+  h1,h2,h3{ font-family:var(--font-display); font-weight:400; }
+  img{ max-width:100%; display:block; }
+  [hidden]{ display:none !important; }
+  button,input,select,textarea{ font:inherit; color:inherit; }
+  button{ cursor:pointer; }
+  :focus-visible{ outline:3px solid var(--rosa-principal); outline-offset:2px; }
+
+  /* ---------- Botones ---------- */
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    min-height:48px; padding:0 22px; border-radius:100px; border:2px solid transparent;
+    font-weight:600; font-size:1rem; transition:background .2s, transform .15s, opacity .2s;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .btn:active{ transform:scale(.97); }
+  .btn:disabled{ opacity:.55; cursor:not-allowed; transform:none; }
+  .btn-primario{ background:var(--rosa-principal); color:#fff; box-shadow:0 6px 18px rgba(224,126,144,.35); }
+  .btn-primario:hover:not(:disabled){ background:var(--rosa-oscuro); }
+  .btn-sec{ background:#fff; color:var(--rosa-oscuro); border-color:var(--rosa-medio); }
+  .btn-sec:hover:not(:disabled){ background:var(--rosa-claro); }
+  .btn-peligro{ background:#fff; color:var(--peligro); border-color:#e6b9bf; }
+  .btn-peligro:hover:not(:disabled){ background:#fbeef0; }
+  .btn-peligro-solido{ background:var(--peligro); color:#fff; }
+  .btn-grande{ width:100%; min-height:56px; font-size:1.05rem; }
+  .btn-chico{ min-height:44px; padding:0 16px; font-size:.9rem; }
+  .spinner{
+    width:18px; height:18px; border-radius:50%; flex-shrink:0;
+    border:3px solid rgba(255,255,255,.45); border-top-color:#fff; animation:giro .8s linear infinite;
+  }
+  .btn-sec .spinner, .btn-peligro .spinner{ border-color:rgba(195,114,128,.3); border-top-color:var(--rosa-oscuro); }
+  @keyframes giro{ to{ transform:rotate(360deg); } }
+
+  /* ---------- Login ---------- */
+  .pantalla-centro{ min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px 16px; }
+  .tarjeta-login{
+    width:100%; max-width:400px; background:#fff; border-radius:24px; padding:32px 24px;
+    box-shadow:0 12px 40px rgba(224,126,144,.2); text-align:center;
+  }
+  .tarjeta-login img{ height:56px; width:auto; margin:0 auto 14px; }
+  .tarjeta-login h1{ font-size:1.7rem; color:var(--rosa-principal); margin-bottom:4px; }
+  .tarjeta-login p.sub{ color:var(--suave); font-size:.9rem; margin-bottom:24px; }
+  .tarjeta-login form{ text-align:left; }
+
+  /* ---------- Campos ---------- */
+  .campo{ margin-bottom:18px; }
+  .campo > label, .campo > .etiqueta{ display:block; font-weight:600; font-size:.9rem; margin-bottom:6px; color:var(--rosa-oscuro); }
+  .campo .ayuda{ font-size:.8rem; color:var(--suave); margin-top:5px; }
+  input[type=text], input[type=email], input[type=password], input[type=search], input[type=time], select, textarea{
+    width:100%; min-height:50px; padding:12px 16px; border-radius:14px;
+    border:2px solid var(--rosa-medio); background:#fff; font-size:1rem; /* 16px evita el zoom en iPhone */
+    appearance:none; -webkit-appearance:none;
+  }
+  textarea{ min-height:84px; resize:vertical; }
+  select{
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%23c37280' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 16px center; padding-right:42px;
+  }
+  input:focus, select:focus, textarea:focus{ outline:none; border-color:var(--rosa-principal); box-shadow:0 0 0 4px rgba(224,126,144,.2); }
+  input.invalido, select.invalido, textarea.invalido{ border-color:var(--peligro); }
+  .prefijo{ position:relative; }
+  .prefijo span{ position:absolute; left:16px; top:50%; transform:translateY(-50%); font-weight:600; color:var(--rosa-oscuro); pointer-events:none; }
+  .prefijo input{ padding-left:34px; }
+  .error-linea{ color:var(--peligro); font-size:.88rem; font-weight:600; margin:0 0 14px; }
+  .error-linea:empty{ display:none; }
+  .contador{ text-align:right; font-size:.75rem; color:var(--suave); margin-top:3px; }
+
+  /* ---------- Cabecera y pestañas ---------- */
+  .cabecera{
+    position:sticky; top:0; z-index:50; background:rgba(247,224,223,.95);
+    backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+    border-bottom:1px solid rgba(224,126,144,.2);
+  }
+  .cabecera-in{ max-width:760px; margin:0 auto; padding:10px 16px; display:flex; align-items:center; gap:10px; }
+  .cabecera img{ height:36px; width:auto; }
+  .cabecera .titulo{ font-family:var(--font-display); color:var(--rosa-principal); font-size:1.2rem; flex:1; min-width:0; }
+  .cabecera a.ver{ font-size:.82rem; font-weight:600; color:var(--rosa-oscuro); text-decoration:underline; white-space:nowrap; }
+  .cabecera a.ver{ margin-left:auto; }
+  .cabecera .titulo{ flex:0 1 auto; }
+  @media (max-width:420px){ .cabecera .titulo{ display:none; } .cabecera-in{ gap:8px; padding:10px 12px; } .cabecera img{ height:32px; } }
+  .tabs{ max-width:760px; margin:0 auto; padding:0 16px 10px; display:flex; gap:6px; }
+  .tab{
+    flex:1; min-height:46px; border-radius:100px; border:2px solid transparent; background:#fff;
+    color:var(--rosa-oscuro); font-weight:600; font-size:.9rem; padding:0 6px;
+  }
+  .tab[aria-selected=true]{ background:var(--rosa-principal); color:#fff; }
+
+  main{ max-width:760px; margin:0 auto; padding:16px 16px 90px; }
+  .aviso-red{
+    background:var(--peligro); color:#fff; text-align:center; font-weight:600; font-size:.88rem;
+    padding:10px 16px;
+  }
+
+  /* ---------- Tarjetas y listas ---------- */
+  .tarjeta{ background:#fff; border-radius:20px; padding:18px 16px; margin-bottom:16px; box-shadow:0 4px 18px rgba(224,126,144,.12); }
+  .tarjeta h2{ font-size:1.3rem; color:var(--rosa-oscuro); margin-bottom:4px; }
+  .tarjeta p.desc{ color:var(--suave); font-size:.88rem; margin-bottom:14px; }
+  .barra-acciones{ display:flex; flex-direction:column; gap:10px; margin-bottom:16px; }
+  .grupo{ margin-bottom:22px; }
+  .grupo h3{ font-size:1.25rem; color:var(--rosa-oscuro); margin:0 4px 10px; display:flex; align-items:center; gap:8px; }
+  .cuenta{ font-family:var(--font-body); font-size:.75rem; font-weight:600; background:var(--rosa-medio); color:var(--rosa-oscuro); border-radius:100px; padding:2px 10px; }
+  .grupo ul{ list-style:none; display:flex; flex-direction:column; gap:10px; }
+
+  .prod{ background:#fff; border-radius:18px; padding:12px; box-shadow:0 3px 14px rgba(224,126,144,.12); }
+  .prod.agotado .prod-top{ opacity:.6; }
+  .prod-top{ display:flex; gap:12px; align-items:center; }
+  .miniatura{
+    width:60px; height:60px; border-radius:12px; background:var(--rosa-claro); flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; overflow:hidden;
+  }
+  .miniatura img{ width:100%; height:100%; object-fit:cover; }
+  .miniatura svg{ width:28px; height:28px; opacity:.55; }
+  .prod-info{ min-width:0; flex:1; }
+  .prod-info strong{ display:block; font-weight:600; overflow-wrap:anywhere; }
+  .prod-info .precio{ color:var(--rosa-principal); font-weight:700; }
+  .prod-acc{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-top:10px; padding-top:10px; border-top:1px solid var(--rosa-claro); }
+  .prod-acc .btn{ flex:1; min-width:96px; }
+  .prod-acc .sw{ width:100%; }
+
+  /* ---------- Interruptor ---------- */
+  .sw{
+    display:inline-flex; align-items:center; gap:12px; min-height:48px; background:none; border:none; padding:0; text-align:left;
+    font-weight:600; font-size:.95rem; -webkit-tap-highlight-color:transparent;
+  }
+  .sw-pista{ width:56px; height:32px; border-radius:100px; background:#cdbfc1; position:relative; flex-shrink:0; transition:background .2s; }
+  .sw-bola{ position:absolute; top:3px; left:3px; width:26px; height:26px; border-radius:50%; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,.25); transition:transform .2s; }
+  .sw[aria-checked=true] .sw-pista{ background:var(--rosa-principal); }
+  .sw[aria-checked=true] .sw-bola{ transform:translateX(24px); }
+  .sw.busy .sw-bola{ background:transparent; box-shadow:none; border:3px solid rgba(255,255,255,.5); border-top-color:#fff; animation:giro .8s linear infinite; }
+  .sw:disabled{ cursor:wait; }
+  .sw-txt small{ display:block; font-weight:400; font-size:.78rem; color:var(--suave); }
+
+  /* ---------- Categorías ---------- */
+  .cat-fila{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; background:#fff; border-radius:18px; padding:12px; box-shadow:0 3px 14px rgba(224,126,144,.12); margin-bottom:10px; }
+  .cat-fila .nombre{ flex:1; min-width:140px; font-weight:600; overflow-wrap:anywhere; }
+  .cat-fila .nombre small{ display:block; font-weight:400; color:var(--suave); font-size:.8rem; }
+  .cat-fila .acc{ display:flex; gap:8px; flex-wrap:wrap; }
+  .btn-flecha{ width:48px; padding:0; font-size:1.1rem; }
+  .nueva-cat{ display:flex; flex-direction:column; gap:10px; }
+
+  /* ---------- Horarios ---------- */
+  .dia{ border-top:1px solid var(--rosa-claro); padding:12px 0; }
+  .dia:first-of-type{ border-top:none; }
+  .dia-top{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .dia-top strong{ font-size:1.05rem; }
+  .dia-horas{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; margin-top:8px; }
+  .dia-horas label{ font-size:.8rem; font-weight:600; color:var(--rosa-oscuro); display:block; }
+  .dia-horas input{ margin-top:4px; min-width:0; padding:12px 8px 12px 12px; font-size:.95rem; }
+  .nota-medianoche{ margin-top:8px; font-size:.82rem; font-weight:600; color:var(--dorado); }
+  .sin-guardar{ font-size:.85rem; font-weight:600; color:var(--dorado); margin:10px 0 0; text-align:center; }
+
+  /* ---------- Modal ---------- */
+  .m-fondo{
+    position:fixed; inset:0; z-index:200; background:rgba(74,50,56,.5);
+    display:flex; align-items:flex-end; justify-content:center; animation:aparece .2s ease;
+  }
+  @keyframes aparece{ from{ opacity:0; } to{ opacity:1; } }
+  .m-caja{
+    background:#fff; width:100%; max-width:560px; max-height:94vh; max-height:94dvh; overflow-y:auto;
+    border-radius:24px 24px 0 0; padding:22px 18px 26px; animation:sube .25s ease;
+    overscroll-behavior:contain;
+  }
+  @keyframes sube{ from{ transform:translateY(40px); } to{ transform:none; } }
+  .m-caja h2{ font-size:1.5rem; color:var(--rosa-principal); margin-bottom:16px; }
+  .m-caja p{ margin-bottom:16px; }
+  .m-botones{ display:flex; flex-direction:column-reverse; gap:10px; margin-top:6px; }
+  @media (min-width:600px){
+    .m-fondo{ align-items:center; }
+    .m-caja{ border-radius:24px; }
+    .m-botones{ flex-direction:row; justify-content:flex-end; }
+    .m-botones .btn{ min-width:150px; }
+    .barra-acciones{ flex-direction:row; }
+    .barra-acciones input{ flex:1; }
+    .nueva-cat{ flex-direction:row; }
+    .nueva-cat input{ flex:1; }
+    .prod-acc .sw{ width:auto; margin-right:auto; }
+    .prod-acc .btn{ flex:0 0 auto; }
+  }
+  .aviso-precio{ background:#fdf3e4; border:2px solid #e8c48c; color:#7a5421; border-radius:14px; padding:12px 14px; font-size:.9rem; font-weight:600; margin-bottom:14px; }
+
+  /* ---------- Imagen del formulario ---------- */
+  .img-previa{
+    width:100%; aspect-ratio:4/3; border-radius:16px; background:var(--rosa-claro); border:2px dashed var(--rosa-medio);
+    display:flex; align-items:center; justify-content:center; overflow:hidden; margin-bottom:10px; color:var(--rosa-oscuro); font-size:.9rem; text-align:center; padding:8px;
+  }
+  .img-previa img{ width:100%; height:100%; object-fit:contain; }
+  .img-previa .spinner{ border-color:var(--rosa-medio); border-top-color:var(--rosa-principal); }
+  .img-previa svg{ width:48px; height:48px; opacity:.5; }
+  .img-botones{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .img-botones .quitar{ grid-column:1 / -1; }
+
+  /* ---------- Avisos ---------- */
+  .vacio{ text-align:center; color:var(--suave); padding:36px 12px; }
+  .cargando{ display:flex; flex-direction:column; align-items:center; gap:14px; padding:56px 12px; color:var(--rosa-oscuro); font-weight:600; }
+  .cargando .spinner{ width:34px; height:34px; border-width:4px; border-color:var(--rosa-medio); border-top-color:var(--rosa-principal); }
+  .caja-error{ background:#fbeef0; border:2px solid #e6b9bf; color:var(--peligro); border-radius:16px; padding:16px; text-align:center; font-weight:600; }
+  .caja-error .btn{ margin-top:12px; }
+  .nota-config{ background:#fdf3e4; border:2px solid #e8c48c; color:#7a5421; border-radius:14px; padding:10px 14px; font-size:.85rem; font-weight:600; margin:0 0 14px; }
+  .toast{
+    position:fixed; left:50%; bottom:22px; transform:translate(-50%,30px); opacity:0; pointer-events:none; z-index:400;
+    max-width:min(92vw,460px); padding:14px 20px; border-radius:16px; color:#fff; font-weight:600; font-size:.95rem; text-align:center;
+    box-shadow:0 8px 28px rgba(0,0,0,.25); transition:opacity .25s, transform .25s;
+  }
+  .toast.show{ opacity:1; transform:translate(-50%,0); }
+  .toast.ok{ background:var(--ok); }
+  .toast.error{ background:var(--peligro); }
+</style>
+</head>
+<body>
+
+<!-- Pantalla inicial mientras se comprueba la sesión -->
+<div id="vistaCarga" class="pantalla-centro"><div class="cargando"><div class="spinner"></div><span>Cargando…</span></div></div>
+
+<!-- LOGIN -->
+<div id="vistaLogin" class="pantalla-centro" hidden>
+  <div class="tarjeta-login">
+    <img src="Recursos/LUNAROSA2PNG-trim.png" alt="Luna Rosa">
+    <h1>Panel de Luna Rosa</h1>
+    <p class="sub">Entra con tu correo y contraseña</p>
+    <form id="formLogin" novalidate>
+      <div class="campo">
+        <label for="loginCorreo">Correo</label>
+        <input id="loginCorreo" type="email" autocomplete="username" inputmode="email" autocapitalize="none" required>
+      </div>
+      <div class="campo">
+        <label for="loginClave">Contraseña</label>
+        <input id="loginClave" type="password" autocomplete="current-password" required>
+      </div>
+      <p class="error-linea" id="loginError" role="alert"></p>
+      <button class="btn btn-primario btn-grande" id="loginBtn" type="submit">Entrar</button>
+    </form>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="vistaApp" hidden>
+  <header class="cabecera">
+    <div class="cabecera-in">
+      <img src="Recursos/LUNAROSA2PNG-trim.png" alt="Luna Rosa">
+      <span class="titulo">Panel</span>
+      <a class="ver" href="index.html" target="_blank" rel="noopener">Ver la página</a>
+      <button class="btn btn-sec btn-chico" id="btnSalir" type="button">Cerrar sesión</button>
+    </div>
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" data-tab="productos" aria-selected="true">Productos</button>
+      <button class="tab" role="tab" data-tab="categorias" aria-selected="false">Categorías</button>
+      <button class="tab" role="tab" data-tab="horarios" aria-selected="false">Horarios</button>
+    </div>
+  </header>
+  <div class="aviso-red" id="avisoRed" role="alert" hidden>Sin conexión a internet. Los cambios no se guardarán hasta que vuelva.</div>
+
+  <main>
+    <div id="estadoCarga" class="cargando" hidden><div class="spinner"></div><span>Cargando datos…</span></div>
+    <div id="estadoError" class="caja-error" hidden></div>
+
+    <section id="panelProductos" data-panel="productos">
+      <div class="barra-acciones">
+        <button class="btn btn-primario btn-grande" id="btnAgregarProducto" type="button">＋ Agregar producto</button>
+        <input type="search" id="buscar" placeholder="Buscar producto por nombre" aria-label="Buscar producto por nombre" autocomplete="off">
+      </div>
+      <div id="listaProductos"></div>
+    </section>
+
+    <section id="panelCategorias" data-panel="categorias" hidden>
+      <div class="tarjeta">
+        <h2>Nueva categoría</h2>
+        <p class="desc">Es un apartado del menú, por ejemplo «🍦 Helados». Puedes empezar con un emoji.</p>
+        <form class="nueva-cat" id="formNuevaCat" novalidate>
+          <input type="text" id="nuevaCatNombre" maxlength="60" placeholder="Nombre de la categoría" aria-label="Nombre de la categoría" autocomplete="off">
+          <button class="btn btn-primario" id="btnNuevaCat" type="submit">Crear categoría</button>
+        </form>
+        <p class="error-linea" id="errNuevaCat" role="alert" style="margin-top:10px"></p>
+      </div>
+      <div id="listaCategorias"></div>
+    </section>
+
+    <section id="panelHorarios" data-panel="horarios" hidden>
+      <div class="tarjeta" id="tarjetaConfig"></div>
+      <div class="tarjeta" id="tarjetaDias"></div>
+    </section>
+  </main>
+</div>
+
+<div id="modalHost"></div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" integrity="sha384-0w2KAL2YHP6wKOkUDzkCDGgVvfmHnj02DHeQ6XcHOgTfFsGyonKOpShMH1x6nk9o" crossorigin="anonymous"></script>
+<script>
+(function(){
+  "use strict";
+
+  /* =========================================================
+     CONFIGURACIÓN Y CLIENTE
+     Solo la clave anon/publishable vive aquí (config.js). La seguridad real
+     está en la base de datos: sin una sesión de administradora, Supabase
+     rechaza cualquier escritura.
+  ========================================================= */
+  const CFG = window.LR_CONFIG || {};
+  const BUCKET = "productos";
+  const MARCA_STORAGE = "/storage/v1/object/public/" + BUCKET + "/";
+  const MAX_LADO = 1000;
+  const LIMITE_BYTES = 2 * 1024 * 1024;
+  const ORDEN_DIAS = [1, 2, 3, 4, 5, 6, 0];
+  const NOMBRE_DIA = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+
+  let db = null;
+  if (CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && window.supabase){
+    db = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY, {
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
+    });
+  }
+
+  /* ---------- utilidades ---------- */
+  const $ = (s, r) => (r || document).querySelector(s);
+  const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+  function esc(t){
+    return String(t == null ? "" : t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  }
+  function fmtCOP(n){ return "$" + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
+  function norm(s){ return String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim(); }
+  const SVG_LUNA = '<svg viewBox="0 0 24 24" fill="#e07e90"><path d="M12 2a10 10 0 1 0 9.8 12 8 8 0 0 1-9.8-12z"/></svg>';
+  const SPIN = '<span class="spinner" aria-hidden="true"></span>';
+
+  let toastT = null;
+  function toast(msg, tipo){
+    const t = $("#toast");
+    t.textContent = msg;
+    t.className = "toast show " + (tipo || "ok");
+    clearTimeout(toastT);
+    toastT = setTimeout(() => t.classList.remove("show"), tipo === "error" ? 6500 : 2800);
+  }
+
+  function noGuardado(){
+    const e = new Error("no guardado");
+    e.noGuardado = true;
+    return e;
+  }
+
+  function msgError(e){
+    const m = String((e && e.message) || e || "");
+    const c = e && (e.code || e.status);
+    if (e && e.mensajeUsuario) return e.mensajeUsuario;
+    if (!navigator.onLine || /failed to fetch|networkerror|load failed|network request failed|fetch failed/i.test(m))
+      return "No hay conexión con el servidor. Revisa tu internet e inténtalo de nuevo.";
+    if (e && e.noGuardado)
+      return "El cambio no se guardó. Inténtalo de nuevo; si sigue igual, cierra sesión y vuelve a entrar.";
+    if (c === "42501" || /row-level security|permission denied|not authorized|unauthorized/i.test(m))
+      return "No tienes permiso para hacer este cambio. Cierra sesión y vuelve a entrar.";
+    if (c === "23503" || /foreign key|violates restrict/i.test(m))
+      return "No se puede eliminar: todavía tiene productos.";
+    if (c === 401 || c === "PGRST301" || /jwt/i.test(m))
+      return "Tu sesión venció. Cierra sesión y vuelve a entrar.";
+    if (/maximum allowed size|payload too large|too large/i.test(m))
+      return "La imagen es demasiado pesada. Prueba con otra foto.";
+    if (/mime|not supported|invalid.*type/i.test(m))
+      return "Ese tipo de imagen no está permitido. Usa una foto JPG, PNG o WebP.";
+    return "Algo salió mal (" + m + "). Inténtalo de nuevo.";
+  }
+
+  /* Ejecuta una operación contra Supabase y falla con claridad. */
+  async function operar(fn){
+    if (!navigator.onLine){
+      const e = new Error("offline"); e.mensajeUsuario = "Sin conexión a internet. No se guardó nada."; throw e;
+    }
+    const res = await fn();
+    if (res && res.error) throw res.error;
+    return res.data;
+  }
+
+  /* =========================================================
+     ESTADO
+  ========================================================= */
+  const S = {
+    categorias: [], productos: [], horarios: [], config: null,
+    busqueda: "", busy: new Set(),
+    diasForm: null, diasBase: ""
+  };
+  const prod = (id) => S.productos.find(p => p.id === Number(id));
+  const cat = (id) => S.categorias.find(c => c.id === Number(id));
+
+  /* =========================================================
+     VISTAS: carga / login / app
+  ========================================================= */
+  function mostrar(vista){
+    $("#vistaCarga").hidden = vista !== "carga";
+    $("#vistaLogin").hidden = vista !== "login";
+    $("#vistaApp").hidden = vista !== "app";
+  }
+
+  function mostrarLogin(mensaje){
+    cerrarModal(true);
+    mostrar("login");
+    $("#loginError").textContent = mensaje || "";
+    $("#loginClave").value = "";
+    resetLoginBtn();
+  }
+  function resetLoginBtn(){
+    const b = $("#loginBtn");
+    b.disabled = false; b.textContent = "Entrar";
+  }
+
+  $("#formLogin").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!db) return;
+    const correo = $("#loginCorreo").value.trim();
+    const clave = $("#loginClave").value;
+    const err = $("#loginError");
+    err.textContent = "";
+    if (!correo || !clave){ err.textContent = "Escribe tu correo y tu contraseña."; return; }
+    const b = $("#loginBtn");
+    b.disabled = true; b.innerHTML = SPIN + " Entrando…";
+    try{
+      const { error } = await db.auth.signInWithPassword({ email: correo, password: clave });
+      if (error){
+        err.textContent = /invalid login|credentials/i.test(error.message)
+          ? "Correo o contraseña incorrectos."
+          : msgError(error);
+        resetLoginBtn();
+        return;
+      }
+      await entrar();
+    }catch(ex){
+      err.textContent = msgError(ex);
+      resetLoginBtn();
+    }
+  });
+
+  $("#btnSalir").addEventListener("click", async () => {
+    await db.auth.signOut();
+    mostrarLogin();
+  });
+
+  /* Verifica que la persona sea administradora y carga los datos. */
+  async function entrar(){
+    mostrar("carga");
+    let esAdmin = false;
+    try{
+      const res = await db.rpc("es_admin");
+      if (res.error) throw res.error;
+      esAdmin = res.data === true;
+    }catch(ex){
+      mostrarLogin("No pudimos comprobar tu permiso. " + msgError(ex));
+      return;
+    }
+    if (!esAdmin){
+      await db.auth.signOut();
+      mostrarLogin("No tienes permiso para entrar a este panel.");
+      return;
+    }
+    mostrar("app");
+    await cargarTodo();
+  }
+
+  async function iniciar(){
+    if (!db){
+      mostrarLogin(!window.supabase
+        ? "No se pudo cargar el sistema de acceso. Revisa tu internet y recarga la página."
+        : "Falta configurar Supabase: pega la URL y la clave anon en config.js.");
+      $("#loginBtn").disabled = true;
+      return;
+    }
+    db.auth.onAuthStateChange((evento) => {
+      if (evento === "SIGNED_OUT" && $("#vistaApp").hidden === false) mostrarLogin("Tu sesión terminó. Entra de nuevo.");
+    });
+    try{
+      const { data } = await db.auth.getSession();
+      if (data && data.session) await entrar();
+      else mostrarLogin();
+    }catch(ex){
+      mostrarLogin(msgError(ex));
+    }
+  }
+
+  /* =========================================================
+     CARGA DE DATOS
+  ========================================================= */
+  async function cargarTodo(){
+    $("#estadoCarga").hidden = false;
+    $("#estadoError").hidden = true;
+    $$("[data-panel]").forEach(p => p.hidden = true);
+    try{
+      const [cs, ps, hs, cf] = await Promise.all([
+        operar(() => db.from("categorias").select("*").order("orden").order("id")),
+        operar(() => db.from("productos").select("*").order("orden").order("id")),
+        operar(() => db.from("horarios").select("*").order("dia_semana")),
+        operar(() => db.from("configuracion").select("*").eq("id", 1))
+      ]);
+      S.categorias = cs; S.productos = ps; S.horarios = hs; S.config = cf[0] || null;
+      if (!S.config) throw Object.assign(new Error("config"), { mensajeUsuario: "Falta la fila de configuración en la base de datos. Ejecuta de nuevo 01-esquema.sql." });
+      iniciarFormDias();
+      $("#estadoCarga").hidden = true;
+      mostrarPestana(pestanaActual);
+      renderTodo();
+    }catch(ex){
+      $("#estadoCarga").hidden = true;
+      const e = $("#estadoError");
+      e.hidden = false;
+      e.innerHTML = esc(msgError(ex)) + '<br><button class="btn btn-sec" type="button" id="btnReintentar">Reintentar</button>';
+      $("#btnReintentar").addEventListener("click", cargarTodo);
+    }
+  }
+
+  function renderTodo(){
+    renderProductos();
+    renderCategorias();
+    renderConfig();
+    renderDias();
+  }
+
+  /* =========================================================
+     PESTAÑAS
+  ========================================================= */
+  let pestanaActual = "productos";
+  function mostrarPestana(nombre){
+    pestanaActual = nombre;
+    $$(".tab").forEach(t => t.setAttribute("aria-selected", String(t.dataset.tab === nombre)));
+    const hayDatos = S.config !== null;
+    $$("[data-panel]").forEach(p => { p.hidden = !hayDatos || p.dataset.panel !== nombre; });
+    window.scrollTo(0, 0);
+  }
+  $$(".tab").forEach(t => t.addEventListener("click", () => mostrarPestana(t.dataset.tab)));
+
+  /* Aviso de conexión */
+  function estadoRed(){ $("#avisoRed").hidden = navigator.onLine; }
+  window.addEventListener("online", estadoRed);
+  window.addEventListener("offline", estadoRed);
+
+  /* =========================================================
+     MODALES
+  ========================================================= */
+  let modalOcupado = false;
+  function abrirModal(html){
+    $("#modalHost").innerHTML = '<div class="m-fondo" id="mFondo"><div class="m-caja" role="dialog" aria-modal="true">' + html + "</div></div>";
+    document.body.classList.add("sin-scroll");
+    $("#mFondo").addEventListener("mousedown", (e) => { if (e.target.id === "mFondo" && !modalOcupado) cerrarModal(); });
+    return $(".m-caja");
+  }
+  function cerrarModal(forzar){
+    if (modalOcupado && !forzar) return;
+    modalOcupado = false;
+    $("#modalHost").innerHTML = "";
+    document.body.classList.remove("sin-scroll");
+    liberarVistaPrevia();
+    F = null;
+  }
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") cerrarModal(); });
+
+  function confirmar({ titulo, html, textoOk, peligro }){
+    return new Promise((resolve) => {
+      const caja = abrirModal(
+        "<h2>" + esc(titulo) + "</h2><p>" + html + "</p>" +
+        '<div class="m-botones">' +
+          '<button class="btn btn-sec" type="button" data-r="0">Cancelar</button>' +
+          '<button class="btn ' + (peligro ? "btn-peligro-solido" : "btn-primario") + '" type="button" data-r="1">' + esc(textoOk) + "</button>" +
+        "</div>"
+      );
+      caja.addEventListener("click", (e) => {
+        const b = e.target.closest("[data-r]");
+        if (!b) return;
+        resolve(b.dataset.r === "1");
+      });
+    });
+  }
+
+  /* =========================================================
+     PRODUCTOS · lista
+  ========================================================= */
+  function interruptor({ on, texto, sub, busy, attrs }){
+    return '<button type="button" class="sw' + (busy ? " busy" : "") + '" role="switch" aria-checked="' + (on ? "true" : "false") + '"' +
+      (busy ? " disabled" : "") + " " + (attrs || "") + ">" +
+      '<span class="sw-pista"><span class="sw-bola"></span></span>' +
+      '<span class="sw-txt">' + esc(texto) + (sub ? "<small>" + esc(sub) + "</small>" : "") + "</span></button>";
+  }
+
+  function filaProducto(p){
+    const disp = p.disponible !== false;
+    const thumb = p.imagen_url
+      ? '<img src="' + esc(p.imagen_url) + '" alt="" loading="lazy">'
+      : SVG_LUNA;
+    return '<li class="prod' + (disp ? "" : " agotado") + '" data-id="' + p.id + '">' +
+      '<div class="prod-top"><div class="miniatura">' + thumb + "</div>" +
+      '<div class="prod-info"><strong>' + esc(p.nombre) + '</strong><span class="precio">' + fmtCOP(p.precio) + "</span></div></div>" +
+      '<div class="prod-acc">' +
+        interruptor({ on: disp, texto: "Disponible", sub: disp ? "" : "Agotado: no se puede pedir", busy: S.busy.has("p" + p.id), attrs: 'data-act="toggle"' }) +
+        '<button class="btn btn-sec btn-chico" type="button" data-act="editar">✏️ Editar</button>' +
+        '<button class="btn btn-peligro btn-chico" type="button" data-act="eliminar">🗑️ Eliminar</button>' +
+      "</div></li>";
+  }
+
+  function renderProductos(){
+    const q = norm(S.busqueda);
+    const cont = $("#listaProductos");
+    if (!S.productos.length){
+      cont.innerHTML = '<div class="vacio">Todavía no hay productos.<br>Toca «Agregar producto» para crear el primero.</div>';
+      return;
+    }
+    const grupos = S.categorias
+      .map(c => ({ c: c, items: S.productos.filter(p => p.categoria_id === c.id && (!q || norm(p.nombre).includes(q))) }))
+      .filter(g => g.items.length);
+    if (!grupos.length){
+      cont.innerHTML = '<div class="vacio">No encontramos productos con «' + esc(S.busqueda.trim()) + "».</div>";
+      return;
+    }
+    cont.innerHTML = grupos.map(g =>
+      '<section class="grupo"><h3>' + esc(g.c.nombre) + ' <span class="cuenta">' + g.items.length + "</span></h3><ul>" +
+      g.items.map(filaProducto).join("") + "</ul></section>"
+    ).join("");
+  }
+
+  /* Si una miniatura no carga, se cambia por la lunita (los eventos "error" no burbujean: captura) */
+  document.addEventListener("error", (e) => {
+    const t = e.target;
+    if (t && t.tagName === "IMG" && t.parentNode && t.parentNode.classList.contains("miniatura")) t.parentNode.innerHTML = SVG_LUNA;
+  }, true);
+
+  $("#buscar").addEventListener("input", (e) => { S.busqueda = e.target.value; renderProductos(); });
+  $("#btnAgregarProducto").addEventListener("click", () => abrirFormProducto(null));
+
+  $("#listaProductos").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-act]");
+    const li = e.target.closest(".prod");
+    if (!b || !li) return;
+    const id = Number(li.dataset.id);
+    if (b.dataset.act === "toggle") alternarDisponible(id);
+    else if (b.dataset.act === "editar") abrirFormProducto(id);
+    else if (b.dataset.act === "eliminar") eliminarProducto(id);
+  });
+
+  /* Disponible / Agotado: la palanca solo cambia cuando la base confirma. */
+  async function alternarDisponible(id){
+    const p = prod(id);
+    const clave = "p" + id;
+    if (!p || S.busy.has(clave)) return;
+    const nuevo = p.disponible === false;
+    S.busy.add(clave); renderProductos();
+    try{
+      const filas = await operar(() => db.from("productos").update({ disponible: nuevo }).eq("id", id).select("id,disponible"));
+      if (!filas || !filas.length || filas[0].disponible !== nuevo) throw noGuardado();
+      p.disponible = nuevo;
+      toast("Guardado ✓ «" + p.nombre + "» " + (nuevo ? "está disponible" : "quedó agotado"));
+    }catch(ex){
+      toast(msgError(ex), "error");
+    }finally{
+      S.busy.delete(clave); renderProductos();
+    }
+  }
+
+  function esImagenStorage(url){ return !!url && String(url).indexOf(MARCA_STORAGE) !== -1; }
+  function rutaStorage(url){ return decodeURIComponent(String(url).split(MARCA_STORAGE)[1].split("?")[0]); }
+  /* Borrar una imagen de Storage nunca bloquea el flujo: si falla, queda huérfana y ya. */
+  async function borrarImagenStorage(url){
+    if (!esImagenStorage(url)) return;
+    try{ await db.storage.from(BUCKET).remove([rutaStorage(url)]); }catch(ex){}
+  }
+
+  async function eliminarProducto(id){
+    const p = prod(id);
+    if (!p) return;
+    const si = await confirmar({
+      titulo: "¿Eliminar producto?",
+      html: "Vas a eliminar <strong>«" + esc(p.nombre) + "»</strong>. Esta acción no se puede deshacer.",
+      textoOk: "Sí, eliminar", peligro: true
+    });
+    if (!si){ cerrarModal(); return; }
+    modalOcupado = true;
+    const btn = $('.m-caja [data-r="1"]'); btn.disabled = true; btn.innerHTML = SPIN + " Eliminando…";
+    $('.m-caja [data-r="0"]').disabled = true;
+    try{
+      const filas = await operar(() => db.from("productos").delete().eq("id", id).select("id"));
+      if (!filas || !filas.length) throw noGuardado();
+      S.productos = S.productos.filter(x => x.id !== id);
+      modalOcupado = false; cerrarModal();
+      renderProductos(); renderCategorias();
+      toast("Guardado ✓ «" + p.nombre + "» se eliminó");
+      borrarImagenStorage(p.imagen_url);
+    }catch(ex){
+      modalOcupado = false; cerrarModal();
+      toast(msgError(ex), "error");
+    }
+  }
+
+  /* =========================================================
+     PRODUCTOS · formulario agregar / editar
+  ========================================================= */
+  let F = null; // estado del formulario abierto
+
+  function liberarVistaPrevia(){
+    if (F && F.previaUrl){ try{ URL.revokeObjectURL(F.previaUrl); }catch(e){} F.previaUrl = null; }
+  }
+
+  function formatearPrecio(valor){
+    const d = String(valor).replace(/\D/g, "").replace(/^0+/, "");
+    return d.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  }
+  function precioNumero(texto){ return parseInt(String(texto).replace(/\D/g, ""), 10) || 0; }
+
+  function abrirFormProducto(id){
+    if (!S.categorias.length){
+      toast("Primero crea una categoría en la pestaña «Categorías».", "error");
+      return;
+    }
+    const p = id ? prod(id) : null;
+    F = {
+      id: id || null, original: p, blob: null, previaUrl: null, quitar: false, procesando: false, guardando: false, precioOk: false
+    };
+    const opcionesCat = S.categorias.map(c =>
+      '<option value="' + c.id + '"' + (p && p.categoria_id === c.id ? " selected" : "") + ">" + esc(c.nombre) + "</option>").join("");
+    const caja = abrirModal(
+      "<h2>" + (p ? "Editar producto" : "Agregar producto") + "</h2>" +
+      '<form id="formProd" novalidate>' +
+        '<div class="campo"><label for="fpNombre">Nombre</label>' +
+          '<input id="fpNombre" type="text" maxlength="60" autocomplete="off" value="' + esc(p ? p.nombre : "") + '">' +
+          '<div class="ayuda">Entre 2 y 60 letras.</div></div>' +
+        '<div class="campo"><label for="fpPrecio">Precio (pesos)</label>' +
+          '<div class="prefijo"><span>$</span><input id="fpPrecio" type="text" inputmode="numeric" autocomplete="off" placeholder="12.000" value="' + (p ? formatearPrecio(p.precio) : "") + '"></div></div>' +
+        '<div class="campo"><label for="fpCat">Categoría (apartado del menú)</label><select id="fpCat">' + opcionesCat + "</select></div>" +
+        '<div class="campo"><label for="fpDesc">Descripción <small style="font-weight:400">(opcional)</small></label>' +
+          '<textarea id="fpDesc" maxlength="200">' + esc(p ? p.descripcion : "") + "</textarea></div>" +
+        '<div class="campo"><span class="etiqueta">Imagen</span>' +
+          '<div class="img-previa" id="fpPrevia"></div>' +
+          '<div class="img-botones">' +
+            '<button class="btn btn-sec" type="button" id="fpCamara">📷 Tomar foto</button>' +
+            '<button class="btn btn-sec" type="button" id="fpGaleria">🖼️ Elegir foto</button>' +
+            '<button class="btn btn-peligro btn-chico quitar" type="button" id="fpQuitar">Quitar imagen</button>' +
+          "</div>" +
+          '<input type="file" id="fpFileCam" accept="image/*" capture="environment" hidden>' +
+          '<input type="file" id="fpFileGal" accept="image/*" hidden>' +
+          '<div class="ayuda">La foto se reduce sola para que la página cargue rápido.</div></div>' +
+        '<div class="aviso-precio" id="fpAvisoPrecio" hidden></div>' +
+        '<p class="error-linea" id="fpError" role="alert"></p>' +
+        '<div class="m-botones">' +
+          '<button class="btn btn-sec" type="button" id="fpCancelar">Cancelar</button>' +
+          '<button class="btn btn-primario" type="submit" id="fpGuardar">Guardar</button>' +
+        "</div>" +
+      "</form>"
+    );
+    pintarPrevia();
+
+    $("#fpPrecio", caja).addEventListener("input", (e) => {
+      const el = e.target;
+      const digitosAntes = el.value.slice(0, el.selectionStart).replace(/\D/g, "").length;
+      el.value = formatearPrecio(el.value);
+      let pos = 0, cuenta = 0;
+      while (pos < el.value.length && cuenta < digitosAntes){ if (/\d/.test(el.value[pos])) cuenta++; pos++; }
+      try{ el.setSelectionRange(pos, pos); }catch(ex){}
+      F.precioOk = false; $("#fpAvisoPrecio").hidden = true; $("#fpGuardar").textContent = "Guardar";
+      el.classList.remove("invalido");
+    });
+    $("#fpNombre", caja).addEventListener("input", (e) => e.target.classList.remove("invalido"));
+    $("#fpCamara", caja).addEventListener("click", () => $("#fpFileCam").click());
+    $("#fpGaleria", caja).addEventListener("click", () => $("#fpFileGal").click());
+    $("#fpFileCam", caja).addEventListener("change", (e) => elegirArchivo(e.target));
+    $("#fpFileGal", caja).addEventListener("change", (e) => elegirArchivo(e.target));
+    $("#fpQuitar", caja).addEventListener("click", () => {
+      liberarVistaPrevia(); F.blob = null; F.quitar = true; pintarPrevia();
+    });
+    $("#fpCancelar", caja).addEventListener("click", () => cerrarModal());
+    $("#formProd", caja).addEventListener("submit", (e) => { e.preventDefault(); guardarProducto(); });
+    setTimeout(() => { try{ $("#fpNombre").focus(); }catch(e){} }, 50);
+  }
+
+  function pintarPrevia(){
+    const box = $("#fpPrevia");
+    if (!box || !F) return;
+    let src = null;
+    if (F.procesando){ box.innerHTML = SPIN + "&nbsp; Preparando imagen…"; }
+    else{
+      if (F.previaUrl) src = F.previaUrl;
+      else if (!F.quitar && F.original && F.original.imagen_url) src = F.original.imagen_url;
+      box.innerHTML = src ? '<img alt="Vista previa de la imagen" src="' + esc(src) + '">' : SVG_LUNA + "<br>Sin imagen";
+    }
+    const hay = !F.procesando && !!src;
+    $("#fpQuitar").hidden = !hay;
+    $("#fpGuardar").disabled = F.procesando || F.guardando;
+  }
+
+  async function elegirArchivo(input){
+    const file = input.files && input.files[0];
+    input.value = "";
+    if (!file || !F) return;
+    $("#fpError").textContent = "";
+    liberarVistaPrevia();
+    F.procesando = true; pintarPrevia();
+    try{
+      const r = await procesarImagen(file);
+      if (!F) return;
+      F.blob = r.blob; F.ext = r.ext; F.quitar = false;
+      F.previaUrl = URL.createObjectURL(r.blob);
+    }catch(ex){
+      if (!F) return;
+      F.blob = null;
+      $("#fpError").textContent = ex && ex.mensajeUsuario ? ex.mensajeUsuario : "No pudimos leer esa imagen. Prueba con otra foto.";
+    }finally{
+      if (F){ F.procesando = false; pintarPrevia(); }
+    }
+  }
+
+  /* Reduce a máx. 1000 px de lado mayor y comprime a WebP (calidad ~0.82), JPEG de respaldo. */
+  function aBlob(canvas, tipo, calidad){
+    return new Promise((res) => { try{ canvas.toBlob(res, tipo, calidad); }catch(e){ res(null); } });
+  }
+  function cargarImg(file){
+    return new Promise((res, rej) => {
+      const u = URL.createObjectURL(file);
+      const im = new Image();
+      im.onload = () => { URL.revokeObjectURL(u); res(im); };
+      im.onerror = () => { URL.revokeObjectURL(u); rej(new Error("imagen")); };
+      im.src = u;
+    });
+  }
+  async function procesarImagen(file){
+    let fuente;
+    try{ fuente = await createImageBitmap(file, { imageOrientation: "from-image" }); }
+    catch(e){ fuente = await cargarImg(file); }
+    const w = fuente.width || fuente.naturalWidth, h = fuente.height || fuente.naturalHeight;
+    if (!w || !h) throw new Error("imagen");
+    const k = Math.min(1, MAX_LADO / Math.max(w, h));
+    const cw = Math.max(1, Math.round(w * k)), ch = Math.max(1, Math.round(h * k));
+    const canvas = document.createElement("canvas");
+    canvas.width = cw; canvas.height = ch;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(fuente, 0, 0, cw, ch);
+    if (fuente.close) fuente.close();
+
+    let blob = await aBlob(canvas, "image/webp", 0.82);
+    let ext = "webp";
+    if (!blob || blob.type !== "image/webp"){
+      ctx.globalCompositeOperation = "destination-over";   // fondo blanco bajo transparencias
+      ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, cw, ch);
+      blob = await aBlob(canvas, "image/jpeg", 0.82);
+      ext = "jpg";
+    }
+    if (blob && blob.size > LIMITE_BYTES) blob = await aBlob(canvas, blob.type, 0.6);
+    if (!blob || blob.size > LIMITE_BYTES)
+      throw Object.assign(new Error("peso"), { mensajeUsuario: "La imagen sigue siendo muy pesada. Prueba con otra foto." });
+    return { blob: blob, ext: ext };
+  }
+
+  function nombreUnico(ext){
+    const id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID()
+      : Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+    return id + "." + ext;
+  }
+
+  function setGuardandoForm(on){
+    F.guardando = on; modalOcupado = on;
+    const g = $("#fpGuardar");
+    g.disabled = on || F.procesando;
+    g.innerHTML = on ? SPIN + " Guardando…" : (F.precioOk ? "Sí, el precio es correcto: guardar" : "Guardar");
+    $("#fpCancelar").disabled = on;
+    $$("#formProd input, #formProd select, #formProd textarea, #formProd .img-botones button").forEach(el => { el.disabled = on; });
+  }
+
+  async function guardarProducto(){
+    if (!F || F.guardando || F.procesando) return;
+    const err = $("#fpError");
+    err.textContent = "";
+    const nombre = $("#fpNombre").value.trim().replace(/\s+/g, " ");
+    const precio = precioNumero($("#fpPrecio").value);
+    const categoria_id = Number($("#fpCat").value);
+    const descripcion = $("#fpDesc").value.trim();
+
+    // Validación (los datos escritos se conservan siempre)
+    $$("#formProd .invalido").forEach(el => el.classList.remove("invalido"));
+    if (nombre.length < 2 || nombre.length > 60){
+      $("#fpNombre").classList.add("invalido"); $("#fpNombre").focus();
+      err.textContent = "El nombre debe tener entre 2 y 60 caracteres."; return;
+    }
+    if (!Number.isInteger(precio) || precio <= 0){
+      $("#fpPrecio").classList.add("invalido"); $("#fpPrecio").focus();
+      err.textContent = "Escribe un precio mayor que cero, por ejemplo 12.000."; return;
+    }
+    if (precio > 10000000){
+      $("#fpPrecio").classList.add("invalido"); $("#fpPrecio").focus();
+      err.textContent = "Ese precio parece demasiado alto. Revisa los ceros."; return;
+    }
+    if (!cat(categoria_id)){ err.textContent = "Elige una categoría."; return; }
+
+    // Protección contra el dedo gordo: cambio de precio de más del 50 %
+    const orig = F.original;
+    if (orig && !F.precioOk && Math.abs(precio - orig.precio) / orig.precio > 0.5){
+      F.precioOk = true;
+      const av = $("#fpAvisoPrecio");
+      av.hidden = false;
+      av.textContent = "El precio cambia de " + fmtCOP(orig.precio) + " a " + fmtCOP(precio) + ". ¿Es correcto? Si es un error, corrígelo; si está bien, toca el botón otra vez.";
+      $("#fpGuardar").textContent = "Sí, el precio es correcto: guardar";
+      return;
+    }
+
+    setGuardandoForm(true);
+    let subido = null;
+    try{
+      const campos = { nombre: nombre, precio: precio, categoria_id: categoria_id, descripcion: descripcion || null };
+      if (F.blob){
+        const ruta = nombreUnico(F.ext);
+        await operar(() => db.storage.from(BUCKET).upload(ruta, F.blob, { contentType: F.blob.type, cacheControl: "31536000", upsert: false }));
+        subido = ruta;
+        campos.imagen_url = db.storage.from(BUCKET).getPublicUrl(ruta).data.publicUrl;
+      } else if (F.quitar){
+        campos.imagen_url = null;
+      }
+
+      let fila;
+      if (orig){
+        if (categoria_id !== orig.categoria_id) campos.orden = siguienteOrdenProducto(categoria_id);
+        // "opciones" nunca va en el UPDATE: se conserva tal cual está en la base.
+        const filas = await operar(() => db.from("productos").update(campos).eq("id", orig.id).select("*"));
+        if (!filas || !filas.length) throw noGuardado();
+        fila = filas[0];
+        const i = S.productos.findIndex(x => x.id === orig.id);
+        S.productos[i] = fila;
+      } else {
+        campos.orden = siguienteOrdenProducto(categoria_id);
+        const filas = await operar(() => db.from("productos").insert(campos).select("*"));
+        if (!filas || !filas.length) throw noGuardado();
+        fila = filas[0];
+        S.productos.push(fila);
+      }
+      S.productos.sort((a, b) => (a.orden - b.orden) || (a.id - b.id));
+
+      const viejaImagen = orig && (F.blob || F.quitar) ? orig.imagen_url : null;
+      modalOcupado = false; cerrarModal(true);
+      renderProductos(); renderCategorias();
+      toast("Guardado ✓ «" + fila.nombre + "»");
+      if (viejaImagen) borrarImagenStorage(viejaImagen);   // las imágenes del repo no se tocan
+    }catch(ex){
+      if (subido){ try{ await db.storage.from(BUCKET).remove([subido]); }catch(e){} }
+      if (F){
+        setGuardandoForm(false);
+        err.textContent = msgError(ex);
+      }
+    }
+  }
+
+  function siguienteOrdenProducto(catId){
+    return S.productos.filter(p => p.categoria_id === catId).reduce((m, p) => Math.max(m, p.orden || 0), 0) + 1;
+  }
+
+  /* =========================================================
+     CATEGORÍAS
+  ========================================================= */
+  function renderCategorias(){
+    const cont = $("#listaCategorias");
+    if (!S.categorias.length){
+      cont.innerHTML = '<div class="vacio">Todavía no hay categorías. Crea la primera arriba.</div>';
+      return;
+    }
+    const total = S.categorias.length;
+    cont.innerHTML = S.categorias.map((c, i) => {
+      const n = S.productos.filter(p => p.categoria_id === c.id).length;
+      const ocupado = S.busy.has("c" + c.id);
+      return '<div class="cat-fila" data-id="' + c.id + '">' +
+        '<div class="nombre">' + esc(c.nombre) + "<small>" + n + (n === 1 ? " producto" : " productos") + "</small></div>" +
+        '<div class="acc">' +
+          '<button class="btn btn-sec btn-flecha" type="button" data-act="subir" aria-label="Subir"' + (i === 0 || ocupado ? " disabled" : "") + ">▲</button>" +
+          '<button class="btn btn-sec btn-flecha" type="button" data-act="bajar" aria-label="Bajar"' + (i === total - 1 || ocupado ? " disabled" : "") + ">▼</button>" +
+          '<button class="btn btn-sec btn-chico" type="button" data-act="renombrar"' + (ocupado ? " disabled" : "") + ">✏️ Renombrar</button>" +
+          '<button class="btn btn-peligro btn-chico" type="button" data-act="eliminar"' + (n > 0 || ocupado ? " disabled" : "") +
+            (n > 0 ? ' title="Solo se puede eliminar una categoría vacía"' : "") + ">🗑️ Eliminar</button>" +
+        "</div>" +
+        (n > 0 ? '<div class="ayuda" style="flex-basis:100%;font-size:.78rem;color:var(--suave)">Para eliminarla, primero mueve o elimina sus productos.</div>' : "") +
+      "</div>";
+    }).join("");
+  }
+
+  $("#formNuevaCat").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const inp = $("#nuevaCatNombre"), err = $("#errNuevaCat"), btn = $("#btnNuevaCat");
+    const nombre = inp.value.trim().replace(/\s+/g, " ");
+    err.textContent = "";
+    if (nombre.length < 1 || nombre.length > 60){ err.textContent = "El nombre debe tener entre 1 y 60 caracteres."; return; }
+    if (S.categorias.some(c => norm(c.nombre) === norm(nombre))){ err.textContent = "Ya existe una categoría con ese nombre."; return; }
+    btn.disabled = true; inp.disabled = true; btn.innerHTML = SPIN + " Creando…";
+    try{
+      const orden = S.categorias.reduce((m, c) => Math.max(m, c.orden || 0), 0) + 1;
+      const filas = await operar(() => db.from("categorias").insert({ nombre: nombre, orden: orden }).select("*"));
+      if (!filas || !filas.length) throw noGuardado();
+      S.categorias.push(filas[0]);
+      S.categorias.sort((a, b) => (a.orden - b.orden) || (a.id - b.id));
+      inp.value = "";
+      renderCategorias();
+      toast("Guardado ✓ Categoría «" + nombre + "» creada");
+    }catch(ex){
+      err.textContent = msgError(ex);
+    }finally{
+      btn.disabled = false; inp.disabled = false; btn.textContent = "Crear categoría";
+    }
+  });
+
+  $("#listaCategorias").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-act]");
+    const fila = e.target.closest(".cat-fila");
+    if (!b || !fila || b.disabled) return;
+    const id = Number(fila.dataset.id);
+    if (b.dataset.act === "subir") moverCategoria(id, -1);
+    else if (b.dataset.act === "bajar") moverCategoria(id, 1);
+    else if (b.dataset.act === "renombrar") renombrarCategoria(id);
+    else if (b.dataset.act === "eliminar") eliminarCategoria(id);
+  });
+
+  async function moverCategoria(id, delta){
+    const i = S.categorias.findIndex(c => c.id === id);
+    const j = i + delta;
+    if (i < 0 || j < 0 || j >= S.categorias.length || S.busy.has("c" + id)) return;
+    const nueva = S.categorias.slice();
+    const tmp = nueva[i]; nueva[i] = nueva[j]; nueva[j] = tmp;
+    const filasEnviar = nueva.map((c, k) => ({ id: c.id, nombre: c.nombre, orden: k + 1 }));
+    S.busy.add("c" + id); renderCategorias();
+    try{
+      // una sola petición = un solo cambio atómico
+      const filas = await operar(() => db.from("categorias").upsert(filasEnviar, { onConflict: "id" }).select("*"));
+      if (!filas || filas.length !== filasEnviar.length) throw noGuardado();
+      S.categorias = filas.sort((a, b) => (a.orden - b.orden) || (a.id - b.id));
+      toast("Guardado ✓ Nuevo orden de categorías");
+    }catch(ex){
+      toast(msgError(ex), "error");
+    }finally{
+      S.busy.delete("c" + id); renderCategorias(); renderProductos();
+    }
+  }
+
+  function renombrarCategoria(id){
+    const c = cat(id);
+    if (!c) return;
+    const caja = abrirModal(
+      "<h2>Renombrar categoría</h2>" +
+      '<form id="formRen" novalidate><div class="campo"><label for="renNombre">Nombre</label>' +
+      '<input id="renNombre" type="text" maxlength="60" autocomplete="off" value="' + esc(c.nombre) + '"></div>' +
+      '<p class="error-linea" id="renError" role="alert"></p>' +
+      '<div class="m-botones"><button class="btn btn-sec" type="button" id="renCancelar">Cancelar</button>' +
+      '<button class="btn btn-primario" type="submit" id="renGuardar">Guardar</button></div></form>'
+    );
+    $("#renCancelar", caja).addEventListener("click", () => cerrarModal());
+    $("#formRen", caja).addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const nombre = $("#renNombre").value.trim().replace(/\s+/g, " ");
+      const err = $("#renError");
+      err.textContent = "";
+      if (nombre.length < 1 || nombre.length > 60){ err.textContent = "El nombre debe tener entre 1 y 60 caracteres."; return; }
+      if (S.categorias.some(x => x.id !== id && norm(x.nombre) === norm(nombre))){ err.textContent = "Ya existe una categoría con ese nombre."; return; }
+      modalOcupado = true;
+      const g = $("#renGuardar"); g.disabled = true; g.innerHTML = SPIN + " Guardando…";
+      $("#renCancelar").disabled = true; $("#renNombre").disabled = true;
+      try{
+        const filas = await operar(() => db.from("categorias").update({ nombre: nombre }).eq("id", id).select("*"));
+        if (!filas || !filas.length) throw noGuardado();
+        c.nombre = filas[0].nombre;
+        modalOcupado = false; cerrarModal(true);
+        renderCategorias(); renderProductos();
+        toast("Guardado ✓ Categoría renombrada");
+      }catch(ex){
+        modalOcupado = false;
+        g.disabled = false; g.textContent = "Guardar"; $("#renCancelar").disabled = false; $("#renNombre").disabled = false;
+        err.textContent = msgError(ex);
+      }
+    });
+    setTimeout(() => { try{ $("#renNombre").focus(); }catch(e){} }, 50);
+  }
+
+  async function eliminarCategoria(id){
+    const c = cat(id);
+    if (!c) return;
+    if (S.productos.some(p => p.categoria_id === id)){
+      toast("Solo se puede eliminar una categoría vacía.", "error"); return;
+    }
+    const si = await confirmar({
+      titulo: "¿Eliminar categoría?",
+      html: "Vas a eliminar la categoría <strong>«" + esc(c.nombre) + "»</strong>. Esta acción no se puede deshacer.",
+      textoOk: "Sí, eliminar", peligro: true
+    });
+    if (!si){ cerrarModal(); return; }
+    modalOcupado = true;
+    const btn = $('.m-caja [data-r="1"]'); btn.disabled = true; btn.innerHTML = SPIN + " Eliminando…";
+    $('.m-caja [data-r="0"]').disabled = true;
+    try{
+      const filas = await operar(() => db.from("categorias").delete().eq("id", id).select("id"));
+      if (!filas || !filas.length) throw noGuardado();
+      S.categorias = S.categorias.filter(x => x.id !== id);
+      modalOcupado = false; cerrarModal();
+      renderCategorias(); renderProductos();
+      toast("Guardado ✓ Categoría eliminada");
+    }catch(ex){
+      modalOcupado = false; cerrarModal();
+      toast(msgError(ex), "error");
+    }
+  }
+
+  /* =========================================================
+     HORARIOS · estado general (interruptores que guardan al instante)
+  ========================================================= */
+  function renderConfig(){
+    const c = S.config;
+    if (!c) return;
+    const temp = c.cerrado_temporalmente === true;
+    const act = c.horario_activo === true;
+    $("#tarjetaConfig").innerHTML =
+      "<h2>Horario en la página</h2>" +
+      '<p class="desc">Estos interruptores se aplican al tocarlos.</p>' +
+      '<div class="campo">' +
+        interruptor({ on: act, texto: "Mostrar horario en la página y bloquear pedidos fuera de horario", busy: S.busy.has("cfg-act"), attrs: 'data-act="cfg-activo"' }) +
+      "</div>" +
+      '<div class="campo">' +
+        interruptor({ on: temp, texto: "Cerrado temporalmente", sub: "Bloquea los pedidos hasta que lo apagues", busy: S.busy.has("cfg-temp"), attrs: 'data-act="cfg-temp"' }) +
+      "</div>" +
+      (temp && !act ? '<p class="nota-config">Ojo: para que el aviso y el bloqueo se vean en la página, activa también «Mostrar horario en la página…».</p>' : "") +
+      '<div class="campo"><label for="cfgMensaje">Mensaje para los clientes</label>' +
+        '<textarea id="cfgMensaje" maxlength="90" placeholder="Hoy descansamos, volvemos mañana">' + esc(c.mensaje_cierre || "") + "</textarea>" +
+        '<div class="contador"><span id="cfgContador">' + (c.mensaje_cierre || "").length + "</span>/90</div></div>" +
+      '<button class="btn btn-sec" type="button" id="cfgGuardarMsg"' + (S.busy.has("cfg-msg") ? " disabled" : "") + ">" +
+        (S.busy.has("cfg-msg") ? SPIN + " Guardando…" : "Guardar mensaje") + "</button>";
+  }
+
+  $("#tarjetaConfig").addEventListener("input", (e) => {
+    if (e.target.id === "cfgMensaje") $("#cfgContador").textContent = e.target.value.length;
+  });
+
+  $("#tarjetaConfig").addEventListener("click", (e) => {
+    const sw = e.target.closest("[data-act]");
+    if (sw && sw.dataset.act === "cfg-activo") guardarConfig("cfg-act", { horario_activo: S.config.horario_activo !== true }, "El horario en la página");
+    else if (sw && sw.dataset.act === "cfg-temp") guardarConfig("cfg-temp", { cerrado_temporalmente: S.config.cerrado_temporalmente !== true, mensaje_cierre: mensajeActual() }, "El cierre temporal");
+    else if (e.target.closest("#cfgGuardarMsg")) guardarConfig("cfg-msg", { mensaje_cierre: mensajeActual() }, "El mensaje");
+  });
+
+  function mensajeActual(){
+    const el = $("#cfgMensaje");
+    const v = (el ? el.value : (S.config.mensaje_cierre || "")).trim();
+    return v || null;
+  }
+
+  async function guardarConfig(clave, cambios, nombre){
+    if (S.busy.has(clave)) return;
+    const textoEscrito = $("#cfgMensaje") ? $("#cfgMensaje").value : "";
+    S.busy.add(clave); renderConfig(); if ($("#cfgMensaje")) { $("#cfgMensaje").value = textoEscrito; $("#cfgContador").textContent = textoEscrito.length; }
+    try{
+      const filas = await operar(() => db.from("configuracion").update(cambios).eq("id", 1).select("*"));
+      if (!filas || !filas.length) throw noGuardado();
+      S.config = filas[0];
+      S.busy.delete(clave); renderConfig();
+      if ($("#cfgMensaje")) { $("#cfgMensaje").value = textoEscrito; $("#cfgContador").textContent = textoEscrito.length; }
+      toast("Guardado ✓ " + nombre + " se actualizó");
+    }catch(ex){
+      S.busy.delete(clave);
+      renderConfig();
+      if ($("#cfgMensaje")) { $("#cfgMensaje").value = textoEscrito; $("#cfgContador").textContent = textoEscrito.length; }   // lo escrito no se pierde
+      toast(msgError(ex), "error");
+    }
+  }
+
+  /* =========================================================
+     HORARIOS · días de la semana (formulario con botón Guardar)
+  ========================================================= */
+  function cortar(t){ return String(t || "").slice(0, 5); }
+  function aMin(t){ const m = /^(\d{1,2}):(\d{2})/.exec(String(t || "")); return m ? (+m[1]) * 60 + (+m[2]) : null; }
+
+  function iniciarFormDias(){
+    const f = {};
+    for (let d = 0; d < 7; d++){
+      const h = S.horarios.find(x => x.dia_semana === d);
+      f[d] = h
+        ? { abierto: !h.cerrado, abre: cortar(h.abre), cierra: cortar(h.cierra) }
+        : { abierto: true, abre: "14:00", cierra: "21:30" };
+    }
+    S.diasForm = f;
+    S.diasBase = JSON.stringify(f);
+  }
+
+  function diaCruzaMedianoche(x){
+    const a = aMin(x.abre), c = aMin(x.cierra);
+    return x.abierto && a !== null && c !== null && c <= a;
+  }
+
+  function renderDias(){
+    if (!S.diasForm) return;
+    const sucio = JSON.stringify(S.diasForm) !== S.diasBase;
+    const ocupado = S.busy.has("dias");
+    $("#tarjetaDias").innerHTML =
+      "<h2>Horario de cada día</h2>" +
+      '<p class="desc">Si el cierre es igual o anterior a la apertura, se entiende que cierra pasada la medianoche.</p>' +
+      ORDEN_DIAS.map(d => {
+        const x = S.diasForm[d];
+        const dis = ocupado ? " disabled" : "";
+        return '<div class="dia" data-dia="' + d + '">' +
+          '<div class="dia-top"><strong>' + NOMBRE_DIA[d] + "</strong>" +
+            interruptor({ on: x.abierto, texto: "Abierto", busy: false, attrs: 'data-act="dia-abierto"' + dis }) + "</div>" +
+          (x.abierto
+            ? '<div class="dia-horas">' +
+                '<label>Abre<input type="time" data-campo="abre" value="' + esc(x.abre) + '"' + dis + "></label>" +
+                '<label>Cierra<input type="time" data-campo="cierra" value="' + esc(x.cierra) + '"' + dis + "></label></div>" +
+                (diaCruzaMedianoche(x) ? '<p class="nota-medianoche">🌙 Cierra pasada la medianoche (en la madrugada del día siguiente)</p>' : "")
+            : "") +
+        "</div>";
+      }).join("") +
+      '<p class="error-linea" id="diasError" role="alert" style="margin-top:12px"></p>' +
+      '<div style="display:flex;flex-direction:column;gap:10px;margin-top:6px">' +
+        '<button class="btn btn-sec" type="button" id="diasCopiar"' + (ocupado ? " disabled" : "") + ">Copiar a todos los días</button>" +
+        '<div class="ayuda" style="margin-top:-4px;font-size:.78rem;color:var(--suave);text-align:center">Copia el horario del lunes a todos los demás días.</div>' +
+        '<button class="btn btn-primario btn-grande" type="button" id="diasGuardar"' + (ocupado ? " disabled" : "") + ">" +
+          (ocupado ? SPIN + " Guardando…" : "Guardar horarios") + "</button>" +
+        (sucio && !ocupado ? '<p class="sin-guardar">Hay cambios sin guardar</p>' : "") +
+      "</div>";
+  }
+
+  $("#tarjetaDias").addEventListener("click", (e) => {
+    if (S.busy.has("dias")) return;
+    const sw = e.target.closest('[data-act="dia-abierto"]');
+    if (sw){
+      const d = Number(sw.closest(".dia").dataset.dia);
+      S.diasForm[d].abierto = !S.diasForm[d].abierto;
+      renderDias(); return;
+    }
+    if (e.target.closest("#diasCopiar")){
+      const lun = S.diasForm[1];
+      for (let d = 0; d < 7; d++) S.diasForm[d] = { abierto: lun.abierto, abre: lun.abre, cierra: lun.cierra };
+      renderDias(); return;
+    }
+    if (e.target.closest("#diasGuardar")) guardarDias();
+  });
+
+  $("#tarjetaDias").addEventListener("input", (e) => {
+    const campo = e.target.dataset && e.target.dataset.campo;
+    if (!campo) return;
+    const d = Number(e.target.closest(".dia").dataset.dia);
+    S.diasForm[d][campo] = e.target.value;
+  });
+  // al terminar de elegir la hora se refresca el aviso de medianoche y "sin guardar"
+  $("#tarjetaDias").addEventListener("change", (e) => {
+    if (e.target.dataset && e.target.dataset.campo){ renderDias(); }
+  });
+
+  async function guardarDias(){
+    const err = $("#diasError");
+    err.textContent = "";
+    for (let d = 0; d < 7; d++){
+      const x = S.diasForm[d];
+      if (x.abierto && (aMin(x.abre) === null || aMin(x.cierra) === null)){
+        err.textContent = "Falta la hora de apertura o de cierre del " + NOMBRE_DIA[d].toLowerCase() + ".";
+        return;
+      }
+    }
+    const filasEnviar = [];
+    for (let d = 0; d < 7; d++){
+      const x = S.diasForm[d];
+      const previo = S.horarios.find(h => h.dia_semana === d);
+      filasEnviar.push({
+        dia_semana: d,
+        abre: x.abre || (previo ? cortar(previo.abre) : "14:00"),
+        cierra: x.cierra || (previo ? cortar(previo.cierra) : "21:30"),
+        cerrado: !x.abierto
+      });
+    }
+    S.busy.add("dias"); renderDias();
+    try{
+      const filas = await operar(() => db.from("horarios").upsert(filasEnviar, { onConflict: "dia_semana" }).select("*"));
+      if (!filas || filas.length !== 7) throw noGuardado();
+      S.horarios = filas.sort((a, b) => a.dia_semana - b.dia_semana);
+      iniciarFormDias();
+      S.busy.delete("dias"); renderDias();
+      toast("Guardado ✓ Horarios actualizados");
+    }catch(ex){
+      S.busy.delete("dias"); renderDias();      // el formulario conserva lo escrito
+      $("#diasError").textContent = msgError(ex);
+      toast(msgError(ex), "error");
+    }
+  }
+
+  /* ===== ARRANQUE ===== */
+  estadoRed();
+  iniciar();
+})();
+</script>
+</body>
+</html>
