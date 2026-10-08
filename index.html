@@ -681,7 +681,7 @@
       return `
         <section class="cat-block" id="cat-${cat.id}">
           <h2 class="cat-title">${esc(cat.nombre)}</h2>
-          <p class="cat-sub">${items.length} delicias para disfrutar</p>
+          <p class="cat-sub">${items.length} ${items.length === 1 ? "delicia" : "delicias"} para disfrutar</p>
           <div class="grid">
             ${items.map(cardHTML).join("")}
           </div>
@@ -1017,7 +1017,8 @@ ${lineas.join("\n")}
   }
 
   /* ===== HORARIOS (siempre en hora de Colombia) =====
-     Solo se usan si config.horario_activo es true. Un cierre menor o igual a la
+     El horario semanal solo se usa si config.horario_activo es true; el cierre
+     temporal funciona aparte y tiene prioridad. Un cierre menor o igual a la
      apertura significa que el local cierra pasada la medianoche. */
   const DIAS = ["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
   const DIAS_CORTOS = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
@@ -1105,11 +1106,12 @@ ${lineas.join("\n")}
 
   /* Estado que usa toda la página. activo=false => nada aparece ni bloquea. */
   function estadoLocal(){
-    if (!config.horario_activo || !horarios.length) return { activo:false, cerrado:false };
+    /* el cierre temporal manda sobre el horario semanal y funciona solo */
     if (config.cerrado_temporalmente){
-      const msg = String(config.mensaje_cierre || "").trim() || "Cerrado temporalmente";
+      const msg = String(config.mensaje_cierre || "").trim() || "Hoy estamos cerrados. ¡Volvemos pronto!";
       return { activo:true, cerrado:true, temporal:true, texto:msg, boton:"Cerrado temporalmente" };
     }
+    if (!config.horario_activo || !horarios.length) return { activo:false, cerrado:false };
     const e = estadoHorario(ahoraBogota());
     if (e.abierto) return { activo:true, cerrado:false, texto:"Abierto ahora · cierra a las " + fmtHora(e.cierra) };
     const texto = "Cerrado" + (e.proxima ? " · abrimos " + cuando(e.proxima) : "");
@@ -1153,7 +1155,7 @@ ${lineas.join("\n")}
       cartAviso.hidden = true;
     } else {
       bannerTexto.textContent = "🌙 " + e.texto + (e.temporal ? "" : " · " + DIRECCION_BANNER + " 🍦");
-      footerHorario.textContent = "🕑 " + resumenSemana();
+      footerHorario.textContent = (config.horario_activo && horarios.length) ? "🕑 " + resumenSemana() : FOOTER_ORIGINAL;
       cartAviso.textContent = !e.cerrado ? "" : e.temporal ? e.texto : "Por ahora estamos cerrados. Podrás enviar tu pedido cuando abramos.";
       cartAviso.hidden = !e.cerrado;
     }

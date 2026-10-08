@@ -227,7 +227,7 @@
   .cargando .spinner{ width:34px; height:34px; border-width:4px; border-color:var(--rosa-medio); border-top-color:var(--rosa-principal); }
   .caja-error{ background:#fbeef0; border:2px solid #e6b9bf; color:var(--peligro); border-radius:16px; padding:16px; text-align:center; font-weight:600; }
   .caja-error .btn{ margin-top:12px; }
-  .nota-config{ background:#fdf3e4; border:2px solid #e8c48c; color:#7a5421; border-radius:14px; padding:10px 14px; font-size:.85rem; font-weight:600; margin:0 0 14px; }
+  .banner-cierre{ background:var(--peligro); color:#fff; text-align:center; font-weight:700; font-size:.9rem; padding:10px 16px; }
   .toast{
     position:fixed; left:50%; bottom:22px; transform:translate(-50%,30px); opacity:0; pointer-events:none; z-index:400;
     max-width:min(92vw,460px); padding:14px 20px; border-radius:16px; color:#fff; font-weight:600; font-size:.95rem; text-align:center;
@@ -278,6 +278,7 @@
       <button class="tab" role="tab" data-tab="categorias" aria-selected="false">Categorías</button>
       <button class="tab" role="tab" data-tab="horarios" aria-selected="false">Horarios</button>
     </div>
+    <div class="banner-cierre" id="bannerCierre" role="status" hidden>🔒 La tienda está CERRADA temporalmente. Los clientes no pueden hacer pedidos.</div>
   </header>
   <div class="aviso-red" id="avisoRed" role="alert" hidden>Sin conexión a internet. Los cambios no se guardarán hasta que vuelva.</div>
 
@@ -1126,16 +1127,16 @@
     if (!c) return;
     const temp = c.cerrado_temporalmente === true;
     const act = c.horario_activo === true;
+    $("#bannerCierre").hidden = !temp;
     $("#tarjetaConfig").innerHTML =
       "<h2>Horario en la página</h2>" +
       '<p class="desc">Estos interruptores se aplican al tocarlos.</p>' +
       '<div class="campo">' +
-        interruptor({ on: act, texto: "Mostrar horario en la página y bloquear pedidos fuera de horario", busy: S.busy.has("cfg-act"), attrs: 'data-act="cfg-activo"' }) +
+        interruptor({ on: temp, texto: "Cerrado temporalmente", sub: "Cierra la tienda ahora mismo y se queda cerrada hasta que lo apagues", busy: S.busy.has("cfg-temp"), attrs: 'data-act="cfg-temp"' }) +
       "</div>" +
       '<div class="campo">' +
-        interruptor({ on: temp, texto: "Cerrado temporalmente", sub: "Bloquea los pedidos hasta que lo apagues", busy: S.busy.has("cfg-temp"), attrs: 'data-act="cfg-temp"' }) +
+        interruptor({ on: act, texto: "Usar horario semanal", sub: "La página abre y cierra sola según los horarios de abajo", busy: S.busy.has("cfg-act"), attrs: 'data-act="cfg-activo"' }) +
       "</div>" +
-      (temp && !act ? '<p class="nota-config">Ojo: para que el aviso y el bloqueo se vean en la página, activa también «Mostrar horario en la página…».</p>' : "") +
       '<div class="campo"><label for="cfgMensaje">Mensaje para los clientes</label>' +
         '<textarea id="cfgMensaje" maxlength="90" placeholder="Hoy descansamos, volvemos mañana">' + esc(c.mensaje_cierre || "") + "</textarea>" +
         '<div class="contador"><span id="cfgContador">' + (c.mensaje_cierre || "").length + "</span>/90</div></div>" +
@@ -1147,10 +1148,19 @@
     if (e.target.id === "cfgMensaje") $("#cfgContador").textContent = e.target.value.length;
   });
 
-  $("#tarjetaConfig").addEventListener("click", (e) => {
+  $("#tarjetaConfig").addEventListener("click", async (e) => {
     const sw = e.target.closest("[data-act]");
     if (sw && sw.dataset.act === "cfg-activo") guardarConfig("cfg-act", { horario_activo: S.config.horario_activo !== true }, "El horario en la página");
-    else if (sw && sw.dataset.act === "cfg-temp") guardarConfig("cfg-temp", { cerrado_temporalmente: S.config.cerrado_temporalmente !== true, mensaje_cierre: mensajeActual() }, "El cierre temporal");
+    else if (sw && sw.dataset.act === "cfg-temp"){
+      if (S.busy.has("cfg-temp")) return;
+      const cerrar = S.config.cerrado_temporalmente !== true;
+      if (cerrar){
+        const si = await confirmar({ titulo: "¿Cerrar la tienda ahora?", html: "Los clientes verán el aviso de cierre y no podrán enviar pedidos hasta que apagues este interruptor.", textoOk: "Sí, cerrar ahora", peligro: true });
+        cerrarModal();
+        if (!si) return;
+      }
+      guardarConfig("cfg-temp", { cerrado_temporalmente: cerrar, mensaje_cierre: mensajeActual() }, "El cierre temporal");
+    }
     else if (e.target.closest("#cfgGuardarMsg")) guardarConfig("cfg-msg", { mensaje_cierre: mensajeActual() }, "El mensaje");
   });
 
