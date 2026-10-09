@@ -1233,6 +1233,7 @@ ${lineas.join("\n")}
     updateBadge(false);
     observarMenu(!primera);
     aplicarHorario();
+    if (DATOS && DATOS.aplicarTema) DATOS.aplicarTema(config);
 
     if (quitados > 0){
       cartNota.textContent = "Quitamos de tu pedido productos que ya no están disponibles.";
@@ -1279,7 +1280,10 @@ ${lineas.join("\n")}
     if (document.visibilityState === "visible" && Date.now() - ultimaCarga > REFRESCO_MS) refrescar();
   });
   /* El estado abierto/cerrado se recalcula solo con el paso del tiempo */
-  setInterval(aplicarHorario, 30000);
+  setInterval(() => {
+    aplicarHorario();
+    if (DATOS && DATOS.aplicarTema) DATOS.aplicarTema(config);   // la decoración también termina sola al pasar su fecha
+  }, 30000);
 
   /* Cursor personalizado (desktop) */
   const cursorMoon = document.getElementById("cursorMoon");

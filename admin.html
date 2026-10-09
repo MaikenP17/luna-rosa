@@ -79,7 +79,7 @@
   .campo{ margin-bottom:18px; }
   .campo > label, .campo > .etiqueta{ display:block; font-weight:600; font-size:.9rem; margin-bottom:6px; color:var(--rosa-oscuro); }
   .campo .ayuda{ font-size:.8rem; color:var(--suave); margin-top:5px; }
-  input[type=text], input[type=email], input[type=password], input[type=search], input[type=time], select, textarea{
+  input[type=text], input[type=email], input[type=password], input[type=search], input[type=time], input[type=date], select, textarea{
     width:100%; min-height:50px; padding:12px 16px; border-radius:14px;
     border:2px solid var(--rosa-medio); background:#fff; font-size:1rem; /* 16px evita el zoom en iPhone */
     appearance:none; -webkit-appearance:none;
@@ -211,6 +211,22 @@
   .dia-horas input{ margin-top:4px; min-width:0; padding:12px 8px 12px 12px; font-size:.95rem; }
   .nota-medianoche{ margin-top:8px; font-size:.82rem; font-weight:600; color:var(--dorado); }
   .sin-guardar{ font-size:.85rem; font-weight:600; color:var(--dorado); margin:10px 0 0; text-align:center; }
+
+  /* ---------- Decoración de temporada ---------- */
+  .segm{ display:grid; grid-template-columns:1fr 1fr; gap:6px; background:var(--rosa-claro); border-radius:100px; padding:5px; }
+  .segm button{
+    min-height:46px; border-radius:100px; border:none; background:transparent; color:var(--rosa-oscuro);
+    font-weight:600; font-size:.95rem; transition:background .26s var(--ease), color .26s var(--ease), transform .2s var(--ease);
+    -webkit-tap-highlight-color:transparent;
+  }
+  .segm button:active:not(:disabled){ transform:scale(.97); }
+  .segm button[aria-checked=true]{ background:var(--rosa-principal); color:#fff; box-shadow:0 4px 12px rgba(224,126,144,.35); }
+  .segm button:disabled{ cursor:wait; opacity:.7; }
+  .tema-estado{ font-size:.85rem; font-weight:600; color:var(--suave); background:var(--rosa-claro); border-radius:12px; padding:8px 12px; margin-bottom:16px; }
+  .tema-estado.activo{ color:#5b3a91; background:#efe8fb; }
+  .tema-acciones{ display:flex; flex-direction:column; gap:10px; margin-top:4px; }
+  .tema-acciones a.btn{ text-decoration:none; }
+  input[type=date]:disabled{ opacity:.6; }
 
   /* ---------- Modal ---------- */
   .m-fondo{
@@ -421,6 +437,7 @@
 
     <section id="panelHorarios" data-panel="horarios" hidden>
       <div class="tarjeta" id="tarjetaConfig"></div>
+      <div class="tarjeta" id="tarjetaTema"></div>
       <div class="tarjeta" id="tarjetaDias"></div>
     </section>
   </main>
@@ -488,6 +505,8 @@
     if (e && e.mensajeUsuario) return e.mensajeUsuario;
     if (!navigator.onLine || /failed to fetch|networkerror|load failed|network request failed|fetch failed/i.test(m))
       return "No hay conexión con el servidor. Revisa tu internet e inténtalo de nuevo.";
+    if (/\btema(_hasta)?\b/.test(m) && (c === "PGRST204" || c === "42703" || /column|schema cache/i.test(m)))
+      return "Falta ejecutar el SQL 06 en Supabase para usar la decoración de temporada.";
     if (c === "PGRST204" || c === "42703" || (/disponible/.test(m) && /column|schema cache/i.test(m)))
       return "Falta ejecutar el SQL 05 en Supabase para poder deshabilitar secciones.";
     if (e && e.noGuardado)
@@ -651,8 +670,8 @@
   ========================================================= */
   const S = {
     categorias: [], productos: [], horarios: [], config: null,
-    busqueda: "", busy: new Set(), colSeccion: true, cargando: false,
-    diasForm: null, diasBase: ""
+    busqueda: "", busy: new Set(), colSeccion: true, colTema: true, cargando: false,
+    diasForm: null, diasBase: "", temaForm: null, temaBase: ""
   };
   const prod = (id) => S.productos.find(p => p.id === Number(id));
   const cat = (id) => S.categorias.find(c => c.id === Number(id));
@@ -780,6 +799,8 @@
       S.colSeccion = cs.length === 0 || cs.every(c => "disponible" in c);   // false = falta ejecutar el SQL 05
       if (!S.config) throw Object.assign(new Error("config"), { mensajeUsuario: "Falta la fila de configuración en la base de datos. Ejecuta de nuevo 01-esquema.sql." });
       iniciarFormDias();
+      S.colTema = "tema" in S.config;   // false = falta ejecutar el SQL 06
+      iniciarFormTema();
       S.cargando = false;
       const esq = quitarEsqueleto();
       mostrarPestana(pestanaActual, false);
@@ -800,6 +821,7 @@
     renderProductos();
     renderCategorias();
     renderConfig();
+    renderTema();
     renderDias();
   }
 
@@ -1541,6 +1563,122 @@
       renderConfig();
       if ($("#cfgMensaje")) { $("#cfgMensaje").value = textoEscrito; $("#cfgContador").textContent = textoEscrito.length; }   // lo escrito no se pierde
       toast(msgError(ex), "error");
+    }
+  }
+
+  /* =========================================================
+     HORARIOS · decoración de temporada (selector + fecha, botón Guardar)
+     Necesita el SQL 06 (configuracion.tema y tema_hasta). Sin esas columnas se
+     muestra un aviso y nada se puede guardar. "Guardado" solo cuando la base
+     confirma la fila; si falla, el formulario vuelve a lo que hay guardado.
+  ========================================================= */
+  function hoyBogota(){
+    try{ return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Bogota", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()); }
+    catch(e){ return new Date(Date.now() - 5 * 3600 * 1000).toISOString().slice(0, 10); }
+  }
+  /* 31 de octubre del año en curso; si ya pasó, el del año siguiente (si no, la decoración nacería apagada). */
+  function sugerenciaHalloween(){
+    const hoy = hoyBogota(), anio = Number(hoy.slice(0, 4));
+    const f = anio + "-10-31";
+    return f >= hoy ? f : (anio + 1) + "-10-31";
+  }
+  function fechaLarga(iso){
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso || ""));
+    if (!m) return "";
+    const meses = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+    return Number(m[3]) + " de " + meses[Number(m[2]) - 1] + " de " + m[1];
+  }
+  function iniciarFormTema(){
+    const c = S.config || {};
+    S.temaForm = { tema: c.tema === "halloween" ? "halloween" : "normal", hasta: c.tema_hasta ? String(c.tema_hasta).slice(0, 10) : "" };
+    S.temaBase = JSON.stringify(S.temaForm);
+  }
+  /* Lo que ven los clientes ahora, según lo guardado. */
+  function estadoTemaGuardado(){
+    const c = S.config || {};
+    if (c.tema !== "halloween") return { activo: false, texto: "Ahora mismo: apagada. La página se ve normal." };
+    const hasta = c.tema_hasta ? String(c.tema_hasta).slice(0, 10) : "";
+    if (hasta && hoyBogota() > hasta) return { activo: false, texto: "Ahora mismo: apagada. El último día (" + fechaLarga(hasta) + ") ya pasó." };
+    return { activo: true, texto: "Ahora mismo: encendida 🎃" + (hasta ? " hasta el " + fechaLarga(hasta) + "." : ", sin fecha de fin.") };
+  }
+
+  function renderTema(){
+    const caja = $("#tarjetaTema");
+    if (!S.config) return;
+    if (!S.colTema){
+      caja.innerHTML = "<h2>Decoración de temporada</h2>" +
+        '<p class="aviso-sql">Falta ejecutar el SQL 06 en Supabase</p>' +
+        '<p class="desc" style="margin:10px 0 0">Abre <strong>supabase/06-tema-temporada.sql</strong>, pégalo en el SQL Editor de Supabase y ejecútalo. Después recarga esta página.</p>';
+      return;
+    }
+    const f = S.temaForm, ocupado = S.busy.has("tema"), dis = ocupado ? " disabled" : "";
+    const sucio = JSON.stringify(f) !== S.temaBase;
+    const est = estadoTemaGuardado();
+    caja.innerHTML =
+      "<h2>Decoración de temporada</h2>" +
+      '<p class="desc">Llena la página de adornos tiernos por unos días. Se apaga sola después del último día que elijas.</p>' +
+      '<p class="tema-estado' + (est.activo ? " activo" : "") + '" role="status">' + esc(est.texto) + "</p>" +
+      '<div class="campo"><span class="etiqueta" id="temaEtiqueta">Tema de la página</span>' +
+        '<div class="segm" role="radiogroup" aria-labelledby="temaEtiqueta">' +
+          '<button type="button" role="radio" aria-checked="' + (f.tema === "normal") + '" data-tema="normal"' + dis + ">Normal</button>" +
+          '<button type="button" role="radio" aria-checked="' + (f.tema === "halloween") + '" data-tema="halloween"' + dis + ">Halloween 🎃</button>" +
+        "</div></div>" +
+      (f.tema === "halloween"
+        ? '<div class="campo"><label for="temaHasta">Último día de la decoración</label>' +
+            '<input type="date" id="temaHasta" value="' + esc(f.hasta) + '"' + dis + ">" +
+            '<div class="ayuda">Ese día todavía se ve; al día siguiente vuelve todo a la normalidad. Si lo dejas vacío, se queda hasta que la apagues.</div></div>'
+        : "") +
+      '<p class="error-linea" id="temaError" role="alert"></p>' +
+      '<div class="tema-acciones">' +
+        '<button class="btn btn-primario btn-grande" type="button" id="temaGuardar"' + (ocupado ? " disabled" : "") + ">" +
+          (ocupado ? SPIN + " Guardando…" : "Guardar decoración") + "</button>" +
+        '<a class="btn btn-sec" id="temaPrevia" href="index.html?tema=halloween" target="_blank" rel="noopener">Ver vista previa</a>' +
+        '<div class="ayuda" style="font-size:.78rem;color:var(--suave);text-align:center">La vista previa abre la página con Halloween encendido solo para ti. Tus clientes no la ven hasta que guardes.</div>' +
+        (sucio && !ocupado ? '<p class="sin-guardar">Hay cambios sin guardar</p>' : "") +
+      "</div>";
+  }
+
+  $("#tarjetaTema").addEventListener("click", (e) => {
+    if (S.busy.has("tema") || !S.temaForm) return;
+    const op = e.target.closest("[data-tema]");
+    if (op){
+      S.temaForm.tema = op.dataset.tema;
+      if (S.temaForm.tema === "halloween" && !S.temaForm.hasta) S.temaForm.hasta = sugerenciaHalloween();
+      renderTema(); return;
+    }
+    if (e.target.closest("#temaGuardar")) guardarTema();
+  });
+  $("#tarjetaTema").addEventListener("input", (e) => {
+    if (e.target.id === "temaHasta" && S.temaForm) S.temaForm.hasta = e.target.value;
+  });
+  $("#tarjetaTema").addEventListener("change", (e) => {
+    if (e.target.id === "temaHasta" && S.temaForm){ S.temaForm.hasta = e.target.value; renderTema(); }
+  });
+
+  async function guardarTema(){
+    const f = S.temaForm;
+    const err = $("#temaError");
+    err.textContent = "";
+    if (f.tema === "halloween" && f.hasta && f.hasta < hoyBogota()){
+      err.textContent = "Ese último día ya pasó: la decoración no se vería. Elige hoy o una fecha futura.";
+      return;
+    }
+    const nuevo = { tema: f.tema, tema_hasta: f.tema === "halloween" && f.hasta ? f.hasta : null };
+    S.busy.add("tema"); renderTema();
+    try{
+      const filas = await operar(() => db.from("configuracion").update(nuevo).eq("id", 1).select("*"));
+      if (!filas || filas.length !== 1 || filas[0].tema !== nuevo.tema || (filas[0].tema_hasta || null) !== nuevo.tema_hasta) throw noGuardado();
+      S.config = filas[0];
+      iniciarFormTema();
+      S.busy.delete("tema"); renderTema();
+      toast("Guardado ✓ " + (nuevo.tema === "halloween" ? "La decoración de Halloween quedó encendida" : "La página volvió a verse normal"));
+    }catch(ex){
+      if (ex && (ex.code === "PGRST204" || ex.code === "42703")) S.colTema = false;
+      iniciarFormTema();                 // vuelve a lo que de verdad está guardado
+      S.busy.delete("tema"); renderTema();
+      const m = msgError(ex);
+      const e2 = $("#temaError"); if (e2) e2.textContent = m;
+      toast(m, "error");
     }
   }
 

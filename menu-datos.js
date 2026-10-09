@@ -68,6 +68,22 @@
     });
   }
 
+  /* Configuración. Pide configuracion.tema y tema_hasta; si las columnas aún no
+     existen (SQL 06 sin ejecutar) Supabase responde 400: se reintenta sin esos
+     campos y el tema cuenta como "normal". */
+  var conColumnasTema = true;
+  function pedirConfig(signal){
+    var base = "configuracion?select=horario_activo,cerrado_temporalmente,mensaje_cierre";
+    if (!conColumnasTema) return pedir(base + "&limit=1", signal);
+    return pedir(base + ",tema,tema_hasta&limit=1", signal).catch(function(err){
+      if (err && err.status === 400){
+        conColumnasTema = false;
+        return pedir(base + "&limit=1", signal);
+      }
+      throw err;
+    });
+  }
+
   /* Consulta a Supabase. Rechaza si algo falla o tarda más de 5 s. */
   function desdeRed(){
     if (!configurado) return Promise.reject(new Error("Supabase sin configurar"));
@@ -77,7 +93,7 @@
     return Promise.all([
       pedirCategorias(cols, ctl.signal),
       pedir("horarios?select=dia_semana,abre,cierra,cerrado&order=dia_semana.asc", ctl.signal),
-      pedir("configuracion?select=horario_activo,cerrado_temporalmente,mensaje_cierre&limit=1", ctl.signal)
+      pedirConfig(ctl.signal)
     ]).then(function(res){
       clearTimeout(timer);
       var filas = res[0], productos = [];
@@ -110,10 +126,71 @@
     });
   }
 
+  /* ===== Decoración de temporada =====
+     Con el tema "normal" no se descarga nada. Si está activo, tema-halloween.css
+     y tema-halloween.js se piden en un momento libre, después de pintar el menú. */
+  var TEMA_VER = "1";
+  var temaActual = "normal";
+
+  /* Fecha de hoy en Colombia, "AAAA-MM-DD" (Colombia es UTC-5 todo el año). */
+  function hoyBogota(){
+    try{
+      return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Bogota", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+    }catch(e){
+      return new Date(Date.now() - 5 * 3600 * 1000).toISOString().slice(0, 10);
+    }
+  }
+
+  /* "halloween" o "normal". ?tema=halloween / ?tema=normal fuerza el tema solo
+     para quien abre ese enlace, sin tocar la base de datos. */
+  function temaDe(conf){
+    var forzado = null;
+    try{ forzado = new URLSearchParams(location.search).get("tema"); }catch(e){}
+    if (forzado === "halloween" || forzado === "normal") return forzado;
+    if (!conf || conf.tema !== "halloween") return "normal";
+    var hasta = String(conf.tema_hasta == null ? "" : conf.tema_hasta).slice(0, 10);
+    if (!hasta) return "halloween";
+    return hoyBogota() <= hasta ? "halloween" : "normal";
+  }
+
+  function cargarTema(){
+    var api = window.LR_TEMA;
+    if (api){ api.activar(); return; }
+    var faltan = 2, fallo = false;
+    function listo(){
+      if (--faltan > 0 || fallo || temaActual !== "halloween") return;
+      if (window.LR_TEMA) window.LR_TEMA.activar();
+    }
+    function error(){ fallo = true; }
+    var css = document.createElement("link");
+    css.rel = "stylesheet"; css.href = "tema-halloween.css?v=" + TEMA_VER;
+    css.onload = listo; css.onerror = error;
+    var js = document.createElement("script");
+    js.src = "tema-halloween.js?v=" + TEMA_VER; js.async = true;
+    js.onload = listo; js.onerror = error;
+    document.head.appendChild(css);
+    document.head.appendChild(js);
+  }
+
+  function aplicarTema(conf){
+    var t = temaDe(conf);
+    if (t === temaActual) return;
+    temaActual = t;
+    if (t === "halloween"){
+      var iniciar = function(){ if (temaActual === "halloween") cargarTema(); };
+      if (window.requestIdleCallback) requestIdleCallback(iniciar, { timeout: 2500 });
+      else setTimeout(iniciar, 600);
+    } else if (window.LR_TEMA){
+      window.LR_TEMA.desactivar();
+    }
+  }
+
   window.LR_DATOS = {
     configurado: configurado,
     cache: leerCache,
     embebido: embebido,
-    desdeRed: desdeRed
+    desdeRed: desdeRed,
+    aplicarTema: aplicarTema,
+    temaDe: temaDe
   };
 })();
