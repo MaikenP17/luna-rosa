@@ -132,6 +132,14 @@
   .buscador-lupa{ display:none; position:absolute; left:17px; top:50%; width:20px; height:20px; margin-top:-10px; color:var(--rosa-oscuro); pointer-events:none; }
   .grupo{ margin-bottom:22px; }
   .grupo h3{ font-size:1.25rem; color:var(--rosa-oscuro); margin:0 4px 10px; display:flex; align-items:center; gap:8px; }
+  .grupo-cab{ display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:space-between; gap:0 16px; margin-bottom:10px; }
+  .grupo-cab h3{ margin:0 4px; min-height:48px; }
+  .sec-sw{ flex:1 1 260px; max-width:340px; }
+  .sec-sw .sw{ width:100%; }
+  .sec-sw .sw-txt small{ margin-top:2px; }
+  .aviso-sql{ background:#fdf3e4; border:2px solid #e8c48c; color:#7a5421; border-radius:14px; padding:8px 12px; font-size:.82rem; font-weight:600; margin:0 0 4px; }
+  .nota-sec{ display:block; font-size:.78rem; font-weight:600; color:var(--dorado); }
+  .prod.sec-off .prod-top{ opacity:.6; }
   .cuenta{ font-family:var(--font-body); font-size:.75rem; font-weight:600; background:var(--rosa-medio); color:var(--rosa-oscuro); border-radius:100px; padding:2px 10px; }
   .grupo ul{ list-style:none; display:flex; flex-direction:column; gap:10px; }
 
@@ -384,6 +392,8 @@
     if (e && e.mensajeUsuario) return e.mensajeUsuario;
     if (!navigator.onLine || /failed to fetch|networkerror|load failed|network request failed|fetch failed/i.test(m))
       return "No hay conexión con el servidor. Revisa tu internet e inténtalo de nuevo.";
+    if (c === "PGRST204" || c === "42703" || (/disponible/.test(m) && /column|schema cache/i.test(m)))
+      return "Falta ejecutar el SQL 05 en Supabase para poder deshabilitar secciones.";
     if (e && e.noGuardado)
       return "El cambio no se guardó. Inténtalo de nuevo; si sigue igual, cierra sesión y vuelve a entrar.";
     if (c === "42501" || /row-level security|permission denied|not authorized|unauthorized/i.test(m))
@@ -414,7 +424,7 @@
   ========================================================= */
   const S = {
     categorias: [], productos: [], horarios: [], config: null,
-    busqueda: "", busy: new Set(),
+    busqueda: "", busy: new Set(), colSeccion: true,
     diasForm: null, diasBase: ""
   };
   const prod = (id) => S.productos.find(p => p.id === Number(id));
@@ -528,6 +538,7 @@
         operar(() => db.from("configuracion").select("*").eq("id", 1))
       ]);
       S.categorias = cs; S.productos = ps; S.horarios = hs; S.config = cf[0] || null;
+      S.colSeccion = cs.length === 0 || cs.every(c => "disponible" in c);   // false = falta ejecutar el SQL 05
       if (!S.config) throw Object.assign(new Error("config"), { mensajeUsuario: "Falta la fila de configuración en la base de datos. Ejecuta de nuevo 01-esquema.sql." });
       iniciarFormDias();
       $("#estadoCarga").hidden = true;
@@ -611,17 +622,31 @@
     return '<button type="button" class="sw' + (busy ? " busy" : "") + '" role="switch" aria-checked="' + (on ? "true" : "false") + '"' +
       (busy ? " disabled" : "") + " " + (attrs || "") + ">" +
       '<span class="sw-pista"><span class="sw-bola"></span></span>' +
-      '<span class="sw-txt">' + esc(texto) + (sub ? "<small>" + esc(sub) + "</small>" : "") + "</span></button>";
+      '<span class="sw-txt">' + esc(texto) + (sub != null ? "<small>" + esc(sub) + "</small>" : "") + "</span></button>";
+  }
+
+  const seccionOff = (c) => !!c && c.disponible === false;
+
+  /* Interruptor "Sección disponible" (el mismo en Productos y en Categorías). */
+  function interruptorSeccion(c){
+    if (!S.colSeccion) return '<p class="aviso-sql">Falta ejecutar el SQL 05 en Supabase para poder deshabilitar secciones.</p>';
+    return '<div class="sec-sw">' + interruptor({
+      on: !seccionOff(c), texto: "Sección disponible",
+      sub: "Si la apagas, los clientes ven la sección como no disponible y no pueden pedir nada de ella. Tus productos conservan su estado.",
+      busy: S.busy.has("s" + c.id), attrs: 'data-act="sec-toggle" data-cat="' + c.id + '"'
+    }) + "</div>";
   }
 
   function filaProducto(p){
     const disp = p.disponible !== false;
+    const off = seccionOff(cat(p.categoria_id));
     const thumb = p.imagen_url
       ? '<img src="' + esc(p.imagen_url) + '" alt="" loading="lazy">'
       : SVG_LUNA;
-    return '<li class="prod' + (disp ? "" : " agotado") + '" data-id="' + p.id + '">' +
+    return '<li class="prod' + (disp ? "" : " agotado") + (off ? " sec-off" : "") + '" data-id="' + p.id + '">' +
       '<div class="prod-top"><div class="miniatura">' + thumb + "</div>" +
-      '<div class="prod-info"><strong>' + esc(p.nombre) + '</strong><span class="precio">' + fmtCOP(p.precio) + "</span></div></div>" +
+      '<div class="prod-info"><strong>' + esc(p.nombre) + '</strong><span class="precio">' + fmtCOP(p.precio) + "</span>" +
+        (off ? '<span class="nota-sec">Sección deshabilitada</span>' : "") + "</div></div>" +
       '<div class="prod-acc">' +
         interruptor({ on: disp, texto: "Disponible", sub: disp ? "" : "Agotado: no se puede pedir", busy: S.busy.has("p" + p.id), attrs: 'data-act="toggle"' }) +
         '<button class="btn btn-sec btn-chico" type="button" data-act="editar">✏️ Editar</button>' +
@@ -644,7 +669,8 @@
       return;
     }
     cont.innerHTML = grupos.map(g =>
-      '<section class="grupo"><h3>' + esc(g.c.nombre) + ' <span class="cuenta">' + g.items.length + "</span></h3><ul>" +
+      '<section class="grupo" data-cat="' + g.c.id + '"><div class="grupo-cab"><h3>' + esc(g.c.nombre) + ' <span class="cuenta">' + g.items.length + "</span></h3>" +
+      interruptorSeccion(g.c) + "</div><ul>" +
       g.items.map(filaProducto).join("") + "</ul></section>"
     ).join("");
   }
@@ -665,6 +691,7 @@
 
   $("#listaProductos").addEventListener("click", (e) => {
     const b = e.target.closest("[data-act]");
+    if (b && b.dataset.act === "sec-toggle"){ alternarSeccion(Number(b.dataset.cat)); return; }
     const li = e.target.closest(".prod");
     if (!b || !li) return;
     const id = Number(li.dataset.id);
@@ -689,6 +716,35 @@
       toast(msgError(ex), "error");
     }finally{
       S.busy.delete(clave); renderProductos();
+    }
+  }
+
+  /* Sección disponible / deshabilitada. No toca productos.disponible. Solo cambia cuando la base confirma 1 fila. */
+  async function alternarSeccion(id){
+    const c = cat(id);
+    const clave = "s" + id;
+    if (!c || S.busy.has(clave) || !S.colSeccion) return;
+    const nuevo = c.disponible === false;      // true = se está prendiendo
+    if (!nuevo){
+      const si = await confirmar({
+        titulo: "¿Deshabilitar toda la sección " + c.nombre + "?",
+        html: "Los clientes la verán como no disponible y no podrán pedir nada de ella. Tus productos conservan su estado.",
+        textoOk: "Sí, deshabilitar", peligro: true
+      });
+      cerrarModal();
+      if (!si) return;
+    }
+    S.busy.add(clave); renderProductos(); renderCategorias();
+    try{
+      const filas = await operar(() => db.from("categorias").update({ disponible: nuevo }).eq("id", id).select("id,disponible"));
+      if (!filas || filas.length !== 1 || filas[0].disponible !== nuevo) throw noGuardado();
+      c.disponible = nuevo;
+      toast("Guardado ✓ La sección «" + c.nombre + "» " + (nuevo ? "está disponible" : "quedó deshabilitada"));
+    }catch(ex){
+      if (ex && (ex.code === "PGRST204" || ex.code === "42703")) S.colSeccion = false;
+      toast(msgError(ex), "error");
+    }finally{
+      S.busy.delete(clave); renderProductos(); renderCategorias();
     }
   }
 
@@ -1005,6 +1061,7 @@
           '<button class="btn btn-peligro btn-chico" type="button" data-act="eliminar"' + (n > 0 || ocupado ? " disabled" : "") +
             (n > 0 ? ' title="Solo se puede eliminar una categoría vacía"' : "") + ">🗑️ Eliminar</button>" +
         "</div>" +
+        '<div style="flex-basis:100%">' + interruptorSeccion(c) + "</div>" +
         (n > 0 ? '<div class="ayuda" style="flex-basis:100%;font-size:.78rem;color:var(--suave)">Para eliminarla, primero mueve o elimina sus productos.</div>' : "") +
       "</div>";
     }).join("");
@@ -1037,6 +1094,7 @@
   $("#listaCategorias").addEventListener("click", (e) => {
     const b = e.target.closest("[data-act]");
     const fila = e.target.closest(".cat-fila");
+    if (b && b.dataset.act === "sec-toggle" && !b.disabled){ alternarSeccion(Number(b.dataset.cat)); return; }
     if (!b || !fila || b.disabled) return;
     const id = Number(fila.dataset.id);
     if (b.dataset.act === "subir") moverCategoria(id, -1);

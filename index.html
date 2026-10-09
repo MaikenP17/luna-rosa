@@ -205,6 +205,15 @@
   .cat-block{ margin-bottom:64px; scroll-margin-top:150px; }
   .cat-title{ font-size:2.1rem; color:var(--rosa-oscuro); text-align:center; margin-bottom:8px; }
   .cat-sub{ text-align:center; color:var(--dorado); font-size:0.85rem; letter-spacing:2px; text-transform:uppercase; margin-bottom:36px; }
+  /* Sección apagada desde el panel: visible pero atenuada, sin poder pedir */
+  .cat-off-tag{
+    display:block; width:max-content; max-width:100%; margin:0 auto 10px;
+    background:var(--rosa-oscuro); color:#fff; font-family:var(--font-body);
+    font-weight:600; font-size:0.72rem; letter-spacing:1px; text-transform:uppercase;
+    padding:5px 14px; border-radius:100px;
+  }
+  .cat-block.cat-off .cat-title, .cat-block.cat-off .cat-sub{ opacity:0.5; }
+  .cat-pill.off{ opacity:0.5; }
 
   .grid{
     display:grid; grid-template-columns:repeat(3, 1fr); grid-template-rows:auto;
@@ -672,15 +681,27 @@
     return productos.filter(p => p.categoria_id === catId);
   }
 
+  /* Una sección apagada (categorias.disponible=false) deja sus productos como no
+     disponibles sin tocar su estado individual. Sin la columna: todo disponible. */
+  function seccionApagada(catId){
+    const c = categorias.find(x => x.id === catId);
+    return !!c && c.disponible === false;
+  }
+  function noDisponible(prod){
+    return !!prod && (prod.disponible === false || seccionApagada(prod.categoria_id));
+  }
+
   function renderMenu(){
     /* una categoría sin productos no se muestra */
     const cats = categorias.filter(c => productosDe(c.id).length > 0);
 
     menuContainer.innerHTML = cats.map(cat => {
       const items = productosDe(cat.id);
+      const off = cat.disponible === false;
       return `
-        <section class="cat-block" id="cat-${cat.id}">
+        <section class="cat-block${off ? " cat-off" : ""}" id="cat-${cat.id}">
           <h2 class="cat-title">${esc(cat.nombre)}</h2>
+          ${off ? '<span class="cat-off-tag">No disponible por ahora</span>' : ""}
           <p class="cat-sub">${items.length} ${items.length === 1 ? "delicia" : "delicias"} para disfrutar</p>
           <div class="grid">
             ${items.map(cardHTML).join("")}
@@ -690,13 +711,13 @@
     }).join("");
 
     catNavInner.innerHTML = cats.map((cat, i) =>
-      `<button class="cat-pill${i === 0 ? " active" : ""}" data-cat="${cat.id}">${esc(cat.nombre)}</button>`
+      `<button class="cat-pill${i === 0 ? " active" : ""}${cat.disponible === false ? " off" : ""}" data-cat="${cat.id}">${esc(cat.nombre)}</button>`
     ).join("");
   }
 
   function cardHTML(prod){
-    const agotado = prod.disponible === false;
-    const tag = agotado ? '<span class="agotado-tag">Agotado</span>' : "";
+    const agotado = noDisponible(prod);
+    const tag = agotado ? `<span class="agotado-tag">${prod.disponible === false ? "Agotado" : "No disponible"}</span>` : "";
     const src = imgSrc(prod);
     const imgBlock = src
       ? `<div class="card-img-wrap">${tag}<img class="card-img" src="${esc(src)}" alt="${esc(prod.nombre)}" loading="lazy" onerror="window.lrImgFallback(this.parentElement,'card-img-wrap placeholder')"></div>`
@@ -722,8 +743,8 @@
       const id = Number(el.dataset.id);
       const qty = cart[id] || 0;
       const prod = prodPorId(id);
-      if (prod && prod.disponible === false){
-        el.innerHTML = `<button class="add-btn" disabled aria-label="Agotado">+</button>`;
+      if (prod && noDisponible(prod)){
+        el.innerHTML = `<button class="add-btn" disabled aria-label="${prod.disponible === false ? "Agotado" : "No disponible"}">+</button>`;
         return;
       }
       el.innerHTML = qty === 0
@@ -749,7 +770,7 @@
 
   function changeQty(id, delta){
     const prod = prodPorId(id);
-    if (delta > 0 && (!prod || prod.disponible === false)) return;
+    if (delta > 0 && (!prod || noDisponible(prod))) return;
     const current = cart[id] || 0;
     const next = Math.max(0, current + delta);
     if (next === 0) delete cart[id];
@@ -807,7 +828,7 @@
     let quitados = 0;
     Object.keys(cart).forEach(id => {
       const prod = prodPorId(id);
-      if (!prod || prod.disponible === false){ delete cart[id]; quitados++; }
+      if (!prod || noDisponible(prod)){ delete cart[id]; quitados++; }
     });
     return quitados;
   }
@@ -915,9 +936,9 @@ ${lineas.join("\n")}
       ? `<div class="modal-img-wrap"><img class="modal-img" src="${esc(src)}" alt="${esc(prod.nombre)}" onerror="window.lrImgFallback(this.parentElement,'modal-img-wrap placeholder')"></div>`
       : `<div class="modal-img-wrap placeholder">${placeholderSVG()}</div>`;
 
-    const acciones = prod.disponible === false
+    const acciones = noDisponible(prod)
       ? `<div class="modal-actions">
-          <button class="modal-add-btn" disabled>Agotado</button>
+          <button class="modal-add-btn" disabled>${prod.disponible === false ? "Agotado" : "No disponible"}</button>
         </div>`
       : `<div class="modal-actions">
           <div class="modal-qty">
@@ -951,7 +972,7 @@ ${lineas.join("\n")}
     modalQty = cart[id] || 1;
     modalContent.innerHTML = modalCardHTML(prod);
 
-    if (prod.disponible !== false){
+    if (!noDisponible(prod)){
       document.getElementById("modalQtyMinus").addEventListener("click", () => {
         modalQty = Math.max(1, modalQty - 1);
         renderModalQty();
@@ -962,7 +983,7 @@ ${lineas.join("\n")}
       });
       document.getElementById("modalAddBtn").addEventListener("click", () => {
         const actual = prodPorId(modalProdId);
-        if (actual && actual.disponible !== false){
+        if (actual && !noDisponible(actual)){
           cart[modalProdId] = modalQty;
           renderCardActions();
           renderCart();

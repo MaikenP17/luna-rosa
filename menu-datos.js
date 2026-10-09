@@ -46,8 +46,25 @@
       headers: { apikey: ANON, Authorization: "Bearer " + ANON, Accept: "application/json" },
       signal: signal
     }).then(function(r){
-      if (!r.ok) throw new Error("HTTP " + r.status);
+      if (!r.ok){ var e = new Error("HTTP " + r.status); e.status = r.status; throw e; }
       return r.json();
+    });
+  }
+
+  /* Categorías con sus productos en una sola consulta. Pide categorias.disponible;
+     si la columna aún no existe (SQL 05 sin ejecutar) Supabase responde 400:
+     se reintenta sin ese campo y todas las secciones cuentan como disponibles. */
+  var conColumnaSeccion = true;
+  function pedirCategorias(cols, signal){
+    var base = "categorias?select=id,nombre,orden";
+    var fin = ",productos(" + cols + ")&order=orden.asc,id.asc";
+    if (!conColumnaSeccion) return pedir(base + fin, signal);
+    return pedir(base + ",disponible" + fin, signal).catch(function(err){
+      if (err && err.status === 400){
+        conColumnaSeccion = false;
+        return pedir(base + fin, signal);
+      }
+      throw err;
     });
   }
 
@@ -58,8 +75,7 @@
     var timer = setTimeout(function(){ ctl.abort(); }, TIMEOUT_MS);
     var cols = "id,categoria_id,nombre,precio,descripcion,imagen_url,disponible,orden,opciones";
     return Promise.all([
-      /* categorías con sus productos en una sola consulta */
-      pedir("categorias?select=id,nombre,orden,productos(" + cols + ")&order=orden.asc,id.asc", ctl.signal),
+      pedirCategorias(cols, ctl.signal),
       pedir("horarios?select=dia_semana,abre,cierra,cerrado&order=dia_semana.asc", ctl.signal),
       pedir("configuracion?select=horario_activo,cerrado_temporalmente,mensaje_cierre&limit=1", ctl.signal)
     ]).then(function(res){
@@ -74,7 +90,9 @@
             disponible: p.disponible !== false, orden: p.orden, opciones: p.opciones
           });
         });
-        return { id: c.id, nombre: c.nombre, orden: c.orden };
+        var cat = { id: c.id, nombre: c.nombre, orden: c.orden };
+        if (c.disponible === false) cat.disponible = false;   // ausente = disponible
+        return cat;
       });
       productos.sort(function(a, b){ return (a.orden - b.orden) || (a.id - b.id); });
       var datos = {
