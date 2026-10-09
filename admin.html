@@ -22,6 +22,7 @@
     --ok:#4f8a5f;
     --font-display:'GFS Didot', serif;
     --font-body:'Montserrat', sans-serif;
+    --ease:cubic-bezier(.22,1,.36,1);
   }
   *{ box-sizing:border-box; margin:0; padding:0; }
   html{ -webkit-text-size-adjust:100%; }
@@ -42,7 +43,7 @@
   .btn{
     display:inline-flex; align-items:center; justify-content:center; gap:8px;
     min-height:48px; padding:0 22px; border-radius:100px; border:2px solid transparent;
-    font-weight:600; font-size:1rem; transition:background .2s, transform .15s, opacity .2s;
+    font-weight:600; font-size:1rem; transition:background .22s var(--ease), transform .2s var(--ease), opacity .2s;
     -webkit-tap-highlight-color:transparent;
   }
   .btn:active{ transform:scale(.97); }
@@ -88,6 +89,7 @@
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%23c37280' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
     background-repeat:no-repeat; background-position:right 16px center; padding-right:42px;
   }
+  input, select, textarea{ transition:border-color .25s var(--ease), box-shadow .25s var(--ease); }
   input:focus, select:focus, textarea:focus{ outline:none; border-color:var(--rosa-principal); box-shadow:0 0 0 4px rgba(224,126,144,.2); }
   input.invalido, select.invalido, textarea.invalido{ border-color:var(--peligro); }
   .prefijo{ position:relative; }
@@ -110,12 +112,19 @@
   .cabecera a.ver{ margin-left:auto; }
   .cabecera .titulo{ flex:0 1 auto; }
   @media (max-width:420px){ .cabecera .titulo{ display:none; } .cabecera-in{ gap:8px; padding:10px 12px; } .cabecera img{ height:32px; } }
-  .tabs{ max-width:760px; margin:0 auto; padding:0 16px 10px; display:flex; gap:6px; }
+  .tabs{ max-width:760px; margin:0 auto; padding:0 16px 10px; display:flex; gap:6px; position:relative; }
   .tab{
-    flex:1; min-height:46px; border-radius:100px; border:2px solid transparent; background:#fff;
-    color:var(--rosa-oscuro); font-weight:600; font-size:.9rem; padding:0 6px;
+    flex:1; min-height:46px; border-radius:100px; border:2px solid transparent; background:transparent;
+    color:var(--rosa-oscuro); font-weight:600; font-size:.9rem; padding:0 6px; position:relative;
+    transition:color .3s var(--ease), transform .2s var(--ease);
   }
-  .tab[aria-selected=true]{ background:var(--rosa-principal); color:#fff; }
+  .tab::before{ content:""; position:absolute; inset:-2px; border-radius:100px; background:#fff; transition:opacity .3s var(--ease); }
+  .tab span{ position:relative; z-index:2; }
+  .tab:active{ transform:scale(.97); }
+  .tab[aria-selected=true]{ color:#fff; }
+  .tab[aria-selected=true]::before{ opacity:0; }
+  .tab-ind{ position:absolute; left:0; top:0; width:0; height:0; border-radius:100px; background:var(--rosa-principal); z-index:1; pointer-events:none; }
+  .tab-ind.listo{ transition:transform .42s var(--ease); }
 
   main{ max-width:760px; margin:0 auto; padding:16px 16px 90px; }
   .aviso-red{
@@ -138,12 +147,23 @@
   .sec-sw .sw{ width:100%; }
   .sec-sw .sw-txt small{ margin-top:2px; }
   .aviso-sql{ background:#fdf3e4; border:2px solid #e8c48c; color:#7a5421; border-radius:14px; padding:8px 12px; font-size:.82rem; font-weight:600; margin:0 0 4px; }
-  .nota-sec{ display:block; font-size:.78rem; font-weight:600; color:var(--dorado); }
+  .nota-sec{ display:inline-block; width:0; overflow:visible; white-space:nowrap; margin-left:8px; font-size:.78rem; font-weight:600; color:var(--dorado); opacity:0; transition:opacity .35s var(--ease); }
+  .prod.sec-off .nota-sec{ opacity:1; }
   .prod.sec-off .prod-top{ opacity:.6; }
   .cuenta{ font-family:var(--font-body); font-size:.75rem; font-weight:600; background:var(--rosa-medio); color:var(--rosa-oscuro); border-radius:100px; padding:2px 10px; }
   .grupo ul{ list-style:none; display:flex; flex-direction:column; gap:10px; }
 
-  .prod{ background:#fff; border-radius:18px; padding:12px; box-shadow:0 3px 14px rgba(224,126,144,.12); }
+  .prod{ background:#fff; border-radius:18px; padding:12px; box-shadow:0 3px 14px rgba(224,126,144,.12); position:relative; isolation:isolate; transition:transform .3s var(--ease); }
+  .prod::after{ content:""; position:absolute; inset:0; border-radius:inherit; box-shadow:0 12px 28px rgba(224,126,144,.26); opacity:0; transition:opacity .3s var(--ease); z-index:-1; pointer-events:none; }
+  .prod::before{ content:""; position:absolute; inset:0; border-radius:inherit; box-shadow:0 0 0 3px rgba(224,126,144,.4); opacity:0; pointer-events:none; }
+  @media (hover:hover) and (pointer:fine){ .prod:hover{ transform:translateY(-2px); } .prod:hover::after{ opacity:1; } }
+  .prod:active{ transform:scale(.992); }
+  .prod.pulso{ animation:pulso .6s var(--ease); }
+  .prod.pulso::before{ animation:pulso-halo .6s var(--ease); }
+  .sec-sw.pulso, .cat-fila.pulso{ animation:pulso .6s var(--ease); }
+  @keyframes pulso{ 35%{ transform:scale(1.012); } }
+  @keyframes pulso-halo{ 30%{ opacity:1; } }
+  .prod-top{ transition:opacity .35s var(--ease); }
   .prod.agotado .prod-top{ opacity:.6; }
   .prod-top{ display:flex; gap:12px; align-items:center; }
   .miniatura{
@@ -164,8 +184,9 @@
     display:inline-flex; align-items:center; gap:12px; min-height:48px; background:none; border:none; padding:0; text-align:left;
     font-weight:600; font-size:.95rem; -webkit-tap-highlight-color:transparent;
   }
-  .sw-pista{ width:56px; height:32px; border-radius:100px; background:#cdbfc1; position:relative; flex-shrink:0; transition:background .2s; }
-  .sw-bola{ position:absolute; top:3px; left:3px; width:26px; height:26px; border-radius:50%; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,.25); transition:transform .2s; }
+  .sw-pista{ width:56px; height:32px; border-radius:100px; background:#cdbfc1; position:relative; flex-shrink:0; transition:background .26s var(--ease), transform .2s var(--ease); }
+  .sw-bola{ position:absolute; top:3px; left:3px; width:26px; height:26px; border-radius:50%; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,.25); transition:transform .28s var(--ease); }
+  .sw:active:not(:disabled) .sw-pista{ transform:scale(.95); }
   .sw[aria-checked=true] .sw-pista{ background:var(--rosa-principal); }
   .sw[aria-checked=true] .sw-bola{ transform:translateX(24px); }
   .sw.busy .sw-bola{ background:transparent; box-shadow:none; border:3px solid rgba(255,255,255,.5); border-top-color:#fff; animation:giro .8s linear infinite; }
@@ -194,15 +215,19 @@
   /* ---------- Modal ---------- */
   .m-fondo{
     position:fixed; inset:0; z-index:200; background:rgba(74,50,56,.5);
-    display:flex; align-items:flex-end; justify-content:center; animation:aparece .2s ease;
+    display:flex; align-items:flex-end; justify-content:center; animation:aparece .25s var(--ease);
   }
   @keyframes aparece{ from{ opacity:0; } to{ opacity:1; } }
+  .m-fondo.saliendo{ animation:desaparece .2s var(--ease) forwards; pointer-events:none; }
+  @keyframes desaparece{ to{ opacity:0; } }
+  .m-fondo.saliendo .m-caja{ animation:modal-out .2s var(--ease) forwards; }
+  @keyframes modal-out{ to{ opacity:0; transform:translateY(10px) scale(.98); } }
   .m-caja{
     background:#fff; width:100%; max-width:560px; max-height:94vh; max-height:94dvh; overflow-y:auto;
-    border-radius:24px 24px 0 0; padding:22px 18px 26px; animation:sube .25s ease;
+    border-radius:24px 24px 0 0; padding:22px 18px 26px; animation:modal-in .32s var(--ease);
     overscroll-behavior:contain;
   }
-  @keyframes sube{ from{ transform:translateY(40px); } to{ transform:none; } }
+  @keyframes modal-in{ from{ opacity:0; transform:translateY(22px) scale(.985); } }
   .m-caja h2{ font-size:1.5rem; color:var(--rosa-principal); margin-bottom:16px; }
   .m-caja p{ margin-bottom:16px; }
   .m-botones{ display:flex; flex-direction:column-reverse; gap:10px; margin-top:6px; }
@@ -240,15 +265,86 @@
   .cargando .spinner{ width:34px; height:34px; border-width:4px; border-color:var(--rosa-medio); border-top-color:var(--rosa-principal); }
   .caja-error{ background:#fbeef0; border:2px solid #e6b9bf; color:var(--peligro); border-radius:16px; padding:16px; text-align:center; font-weight:600; }
   .caja-error .btn{ margin-top:12px; }
-  .banner-cierre{ background:var(--peligro); color:#fff; text-align:center; font-weight:700; font-size:.9rem; padding:10px 16px; }
+  .banner-cierre{ background:var(--peligro); color:#fff; text-align:center; font-weight:700; font-size:.9rem; padding:10px 16px; overflow:hidden; }
+  .banner-cierre > span{ display:block; }
+  .banner-cierre.entra > span{ animation:banner-in .4s var(--ease) backwards; }
+  @keyframes banner-in{ from{ transform:translateY(-100%); opacity:0; } }
+  .banner-fantasma{ z-index:40; pointer-events:none; }
   .toast{
     position:fixed; left:50%; bottom:22px; transform:translate(-50%,30px); opacity:0; pointer-events:none; z-index:400;
     max-width:min(92vw,460px); padding:14px 20px; border-radius:16px; color:#fff; font-weight:600; font-size:.95rem; text-align:center;
-    box-shadow:0 8px 28px rgba(0,0,0,.25); transition:opacity .25s, transform .25s;
+    box-shadow:0 8px 28px rgba(0,0,0,.25); transition:opacity .3s var(--ease), transform .4s var(--ease);
   }
   .toast.show{ opacity:1; transform:translate(-50%,0); }
   .toast.ok{ background:var(--ok); }
   .toast.error{ background:var(--peligro); }
+
+  /* ---------- Movimiento (solo transform y opacity) ---------- */
+  .marca{ position:relative; display:flex; justify-content:center; width:max-content; max-width:100%; margin:0 auto 14px; overflow:hidden; }
+  .tarjeta-login .marca img{ margin:0; }
+  .marca::after{
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background:linear-gradient(100deg, transparent 36%, rgba(255,255,255,.9) 50%, transparent 64%);
+    transform:translateX(-120%); animation:destello 1.1s var(--ease) .7s 1 both;
+  }
+  @keyframes destello{ to{ transform:translateX(120%); } }
+  .tarjeta-login{ animation:ent-item .6s var(--ease) backwards; }
+  .tarjeta-login .marca{ animation:ent-item .6s var(--ease) .08s backwards; }
+  .tarjeta-login .ent{ animation:ent-item .5s var(--ease) calc(.14s + var(--i,0) * 40ms) backwards; }
+  @keyframes ent-item{ from{ opacity:0; transform:translateY(12px); } }
+  @keyframes ent-fade{ from{ opacity:0; } }
+  .tarjeta-login.tiembla{ animation:tiembla .42s var(--ease); }
+  @keyframes tiembla{ 20%{ transform:translateX(-7px); } 40%{ transform:translateX(6px); } 60%{ transform:translateX(-4px); } 80%{ transform:translateX(2px); } }
+  #vistaLogin.sale .tarjeta-login{ animation:sale-login .3s var(--ease) forwards; }
+  @keyframes sale-login{ to{ opacity:0; transform:scale(.96); } }
+  .btn .spinner{ animation:giro .8s linear infinite, ent-fade .25s var(--ease); }
+
+  #vistaApp.ent-larga .cabecera{ animation:ent-cab .55s var(--ease) backwards; }
+  @keyframes ent-cab{ from{ opacity:0; transform:translateY(-14px); } }
+  #vistaApp.ent-larga .tab span{ animation:ent-item .45s var(--ease) calc(.14s + var(--i,0) * 40ms) backwards; }
+  #vistaApp.ent-larga .tab-ind{ animation:ent-fade .5s var(--ease) .1s backwards; }
+  #vistaApp.ent-corta .cabecera{ animation:ent-fade .25s var(--ease) backwards; }
+  .ent-item{ animation:ent-item .5s var(--ease) calc(.12s + var(--i,0) * 40ms) backwards; }
+  #vistaApp.ent-corta .ent-item{ animation-duration:.28s; animation-delay:calc(var(--i,0) * 15ms); }
+  .panel-entra{ animation:ent-panel .32s var(--ease) backwards; }
+  @keyframes ent-panel{ from{ opacity:0; transform:translateY(8px); } }
+
+  /* ---------- Esqueleto de carga ---------- */
+  #listaProductos{ position:relative; }
+  .sk-lista{ pointer-events:none; animation:ent-fade .3s var(--ease) backwards; }
+  .sk-lista.sale{ position:absolute; left:0; right:0; top:0; animation:sk-out .3s var(--ease) forwards; }
+  @keyframes sk-out{ to{ opacity:0; } }
+  .sk{ display:block; position:relative; overflow:hidden; background:var(--rosa-claro); border-radius:10px; }
+  .sk::after{
+    content:""; position:absolute; inset:0; will-change:transform;
+    background:linear-gradient(100deg, transparent 20%, rgba(255,255,255,.7) 50%, transparent 80%);
+    transform:translateX(-100%); animation:sk-brillo 1.5s linear infinite;
+  }
+  @keyframes sk-brillo{ to{ transform:translateX(100%); } }
+  .sk-card{ background:#fff; border-radius:18px; padding:12px; box-shadow:0 3px 14px rgba(224,126,144,.12); margin-bottom:10px; }
+  .sk-top{ display:flex; gap:12px; align-items:center; }
+  .sk-img{ width:60px; height:60px; border-radius:12px; flex-shrink:0; }
+  .sk-info{ flex:1; display:flex; flex-direction:column; gap:10px; }
+  .sk-acc{ margin-top:10px; padding-top:10px; border-top:1px solid var(--rosa-claro); height:111px; display:flex; flex-direction:column; gap:8px; }
+  .sk-acc .sk:first-child{ height:48px; }
+  .sk-acc .sk:last-child{ height:44px; }
+  .sk-cab{ min-height:144px; }
+  .sk-cab h3{ display:flex; align-items:center; }
+  .sk-cab .sk{ background:rgba(241,191,196,.55); }
+  @media (min-width:600px){
+    .sk-cab{ min-height:96px; }
+    .sk-acc{ height:59px; flex-direction:row; align-items:center; justify-content:space-between; }
+    .sk-acc .sk:first-child{ height:32px; }
+    .sk-acc .sk:last-child{ height:44px; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *, *::before, *::after{ animation-duration:.001ms !important; animation-delay:0s !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; transition-delay:0s !important; }
+    .spinner, .sw.busy .sw-bola{ animation:latido 1.2s ease-in-out infinite !important; }
+    @keyframes latido{ 50%{ opacity:.35; } }
+    .sk::after{ animation:none !important; }
+    .tab-ind{ transition:none !important; }
+  }
 </style>
 </head>
 <body>
@@ -259,20 +355,20 @@
 <!-- LOGIN -->
 <div id="vistaLogin" class="pantalla-centro" hidden>
   <div class="tarjeta-login">
-    <img src="Recursos/LUNAROSA2PNG-trim.png" alt="Luna Rosa">
-    <h1>Panel de Luna Rosa</h1>
-    <p class="sub">Entra con tu correo y contraseña</p>
+    <div class="marca"><img src="Recursos/LUNAROSA2PNG-trim.png" alt="Luna Rosa"></div>
+    <h1 class="ent" style="--i:0">Panel de Luna Rosa</h1>
+    <p class="sub ent" style="--i:1">Entra con tu correo y contraseña</p>
     <form id="formLogin" novalidate>
-      <div class="campo">
+      <div class="campo ent" style="--i:2">
         <label for="loginCorreo">Correo</label>
         <input id="loginCorreo" type="email" autocomplete="username" inputmode="email" autocapitalize="none" required>
       </div>
-      <div class="campo">
+      <div class="campo ent" style="--i:3">
         <label for="loginClave">Contraseña</label>
         <input id="loginClave" type="password" autocomplete="current-password" required>
       </div>
       <p class="error-linea" id="loginError" role="alert"></p>
-      <button class="btn btn-primario btn-grande" id="loginBtn" type="submit">Entrar</button>
+      <button class="btn btn-primario btn-grande ent" style="--i:4" id="loginBtn" type="submit">Entrar</button>
     </form>
   </div>
 </div>
@@ -287,16 +383,16 @@
       <button class="btn btn-sec btn-chico" id="btnSalir" type="button">Cerrar sesión</button>
     </div>
     <div class="tabs" role="tablist">
-      <button class="tab" role="tab" data-tab="productos" aria-selected="true">Productos</button>
-      <button class="tab" role="tab" data-tab="categorias" aria-selected="false">Categorías</button>
-      <button class="tab" role="tab" data-tab="horarios" aria-selected="false">Horarios</button>
+      <span class="tab-ind" aria-hidden="true"></span>
+      <button class="tab" role="tab" data-tab="productos" aria-selected="true"><span style="--i:0">Productos</span></button>
+      <button class="tab" role="tab" data-tab="categorias" aria-selected="false"><span style="--i:1">Categorías</span></button>
+      <button class="tab" role="tab" data-tab="horarios" aria-selected="false"><span style="--i:2">Horarios</span></button>
     </div>
-    <div class="banner-cierre" id="bannerCierre" role="status" hidden>🔒 La tienda está CERRADA temporalmente. Los clientes no pueden hacer pedidos.</div>
+    <div class="banner-cierre" id="bannerCierre" role="status" hidden><span>🔒 La tienda está CERRADA temporalmente. Los clientes no pueden hacer pedidos.</span></div>
   </header>
   <div class="aviso-red" id="avisoRed" role="alert" hidden>Sin conexión a internet. Los cambios no se guardarán hasta que vuelva.</div>
 
   <main>
-    <div id="estadoCarga" class="cargando" hidden><div class="spinner"></div><span>Cargando datos…</span></div>
     <div id="estadoError" class="caja-error" hidden></div>
 
     <section id="panelProductos" data-panel="productos">
@@ -420,11 +516,142 @@
   }
 
   /* =========================================================
+     MOVIMIENTO · solo transform y opacity; con prefers-reduced-motion no hay movimiento
+  ========================================================= */
+  const mqMov = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const conMovimiento = () => !mqMov.matches;
+  const EASE = "cubic-bezier(.22,1,.36,1)";
+  const esperar = (ms) => new Promise((r) => setTimeout(r, ms));
+  function reiniciarClase(el, clase){ el.classList.remove(clase); void el.offsetWidth; el.classList.add(clase); }
+  function pulsar(el){ if (el && conMovimiento()) reiniciarClase(el, "pulso"); }
+  document.addEventListener("animationend", (e) => {
+    if (e.animationName === "pulso" || e.animationName === "tiembla") e.target.classList.remove(e.animationName === "pulso" ? "pulso" : "tiembla");
+    else if (e.animationName === "ent-panel") e.target.classList.remove("panel-entra");
+  });
+  function temblar(){ const t = $(".tarjeta-login"); if (t && conMovimiento()) reiniciarClase(t, "tiembla"); }
+
+  /* Entrada escalonada de la lista: solo en el primer render tras cargar/entrar (máx. 12 elementos, 40 ms entre cada uno). */
+  let entrada = null;   // "larga" (viene del login) | "corta" (sesión guardada) | null
+  function prepararEntrada(modo){
+    entrada = modo;
+    const app = $("#vistaApp");
+    app.classList.remove("ent-larga", "ent-corta");
+    if (conMovimiento()){ app.classList.add("ent-" + modo); setTimeout(() => app.classList.remove("ent-" + modo), 1500); }
+  }
+  function marcarCascada(cont){
+    if (!entrada) return;
+    const modo = entrada; entrada = null;
+    if (!conMovimiento()) return;
+    const max = modo === "larga" ? 12 : 6;
+    const els = $$(".grupo-cab, .prod", cont).slice(0, max);
+    els.forEach((el, i) => { el.style.setProperty("--i", i); el.classList.add("ent-item"); });
+    setTimeout(() => els.forEach((el) => { el.classList.remove("ent-item"); el.style.removeProperty("--i"); }), 1400);
+  }
+
+  /* Las listas se vuelven a pintar completas; para que los cambios de estado (interruptor, atenuado)
+     se vean como transición, el elemento nuevo arranca en el estado anterior y pasa al nuevo. */
+  const SEL_ESTADO = ".prod[data-k], .sw[data-k]";
+  function estadoPrevio(cont){
+    const m = new Map();
+    $$(SEL_ESTADO, cont).forEach((el) => {
+      m.set(el.dataset.k, el.classList.contains("prod")
+        ? [el.classList.contains("agotado"), el.classList.contains("sec-off")]
+        : [el.getAttribute("aria-checked")]);
+    });
+    return m;
+  }
+  function animarCambios(cont, previo){
+    if (!conMovimiento() || !previo.size) return;
+    const cambios = [];
+    $$(SEL_ESTADO, cont).forEach((el) => {
+      const p = previo.get(el.dataset.k);
+      if (!p) return;
+      if (el.classList.contains("prod")){
+        const a = el.classList.contains("agotado"), o = el.classList.contains("sec-off");
+        if (a !== p[0] || o !== p[1]){ cambios.push([el, a, o]); el.classList.toggle("agotado", p[0]); el.classList.toggle("sec-off", p[1]); }
+      } else {
+        const c = el.getAttribute("aria-checked");
+        if (c !== p[0]){ cambios.push([el, c]); el.setAttribute("aria-checked", p[0]); }
+      }
+    });
+    if (!cambios.length) return;
+    void cont.offsetWidth;      // fija el estado de partida
+    cambios.forEach((c) => {
+      const el = c[0];
+      if (el.classList.contains("prod")){ el.classList.toggle("agotado", c[1]); el.classList.toggle("sec-off", c[2]); }
+      else el.setAttribute("aria-checked", c[1]);
+    });
+  }
+
+  /* La lista se cierra deslizando (solo transform) cuando cambia la altura por borrar algo. */
+  function conFlip(cont, fn){
+    if (!conMovimiento()){ fn(); return; }
+    const SEL = ".prod[data-k], .grupo-cab[data-k]";
+    const antes = new Map();
+    $$(SEL, cont).forEach((el) => antes.set(el.dataset.k, el.getBoundingClientRect().top));
+    fn();
+    $$(SEL, cont).forEach((el) => {
+      const t = antes.get(el.dataset.k);
+      if (t === undefined) return;
+      const dy = t - el.getBoundingClientRect().top;
+      if (Math.abs(dy) > 1) el.animate([{ transform: "translateY(" + dy + "px)" }, { transform: "none" }], { duration: 340, easing: EASE });
+    });
+  }
+  async function desvanecer(el){
+    if (!el || !conMovimiento()) return;
+    try{ await el.animate([{ opacity: 1, transform: "none" }, { opacity: 0, transform: "scale(.97)" }], { duration: 220, easing: EASE, fill: "forwards" }).finished; }catch(e){}
+  }
+
+  /* Banner "CERRADA temporalmente": baja y sube; el contenido se desliza con él. */
+  let bannerListo = false, bannerOn = false;
+  function ponerBanner(on){
+    const b = $("#bannerCierre");
+    if (!bannerListo){ bannerListo = true; bannerOn = on; b.hidden = !on; return; }
+    if (on === bannerOn) return;
+    bannerOn = on;
+    if (!conMovimiento()){ b.hidden = !on; return; }
+    const main = $("main");
+    if (on){
+      b.hidden = false;
+      const h = b.offsetHeight;
+      reiniciarClase(b, "entra");
+      main.animate([{ transform: "translateY(" + (-h) + "px)" }, { transform: "none" }], { duration: 380, easing: EASE });
+    } else {
+      const r = b.getBoundingClientRect(), h = r.height;
+      const g = b.cloneNode(true);
+      g.removeAttribute("id"); g.classList.add("banner-fantasma");
+      g.style.cssText = "position:fixed;left:" + r.left + "px;top:" + r.top + "px;width:" + r.width + "px;";
+      document.body.appendChild(g);
+      b.hidden = true;
+      g.animate([{ transform: "none", opacity: 1 }, { transform: "translateY(" + (-h) + "px)", opacity: 0 }], { duration: 320, easing: EASE }).onfinish = () => g.remove();
+      main.animate([{ transform: "translateY(" + h + "px)" }, { transform: "none" }], { duration: 380, easing: EASE });
+    }
+  }
+
+  /* Esqueleto de carga */
+  function esqueletoHTML(){
+    const sk = (w, h) => '<span class="sk" style="width:' + w + ";height:" + h + '"></span>';
+    let h = '<div class="sk-lista" aria-hidden="true"><div class="grupo-cab sk-cab"><h3>' + sk("150px", "22px") + '</h3><div class="sec-sw" style="display:flex;flex-direction:column;gap:8px;padding-top:4px">' + sk("55%", "18px") + sk("100%", "12px") + sk("80%", "12px") + "</div></div>";
+    for (let i = 0; i < 4; i++){
+      h += '<div class="sk-card"><div class="sk-top">' + sk("60px", "60px").replace('class="sk"', 'class="sk sk-img"') +
+        '<div class="sk-info">' + sk("55%", "16px") + sk("28%", "14px") + '</div></div><div class="sk-acc">' + sk("45%", "48px") + sk("100%", "44px") + "</div></div>";
+    }
+    return h + "</div>";
+  }
+  function quitarEsqueleto(){ const sk = $(".sk-lista", $("#listaProductos")); return sk ? sk.parentNode.removeChild(sk) : null; }
+  function cruzarEsqueleto(sk){
+    if (!sk || !conMovimiento()) return;
+    sk.classList.add("sale");
+    $("#listaProductos").appendChild(sk);
+    setTimeout(() => sk.remove(), 400);
+  }
+
+  /* =========================================================
      ESTADO
   ========================================================= */
   const S = {
     categorias: [], productos: [], horarios: [], config: null,
-    busqueda: "", busy: new Set(), colSeccion: true,
+    busqueda: "", busy: new Set(), colSeccion: true, cargando: false,
     diasForm: null, diasBase: ""
   };
   const prod = (id) => S.productos.find(p => p.id === Number(id));
@@ -434,6 +661,7 @@
      VISTAS: carga / login / app
   ========================================================= */
   function mostrar(vista){
+    $("#vistaLogin").classList.remove("sale");
     $("#vistaCarga").hidden = vista !== "carga";
     $("#vistaLogin").hidden = vista !== "login";
     $("#vistaApp").hidden = vista !== "app";
@@ -441,10 +669,12 @@
 
   function mostrarLogin(mensaje){
     cerrarModal(true);
+    const yaVisible = !$("#vistaLogin").hidden;
     mostrar("login");
     $("#loginError").textContent = mensaje || "";
     $("#loginClave").value = "";
     resetLoginBtn();
+    if (mensaje && yaVisible) temblar();
   }
   function resetLoginBtn(){
     const b = $("#loginBtn");
@@ -458,7 +688,7 @@
     const clave = $("#loginClave").value;
     const err = $("#loginError");
     err.textContent = "";
-    if (!correo || !clave){ err.textContent = "Escribe tu correo y tu contraseña."; return; }
+    if (!correo || !clave){ err.textContent = "Escribe tu correo y tu contraseña."; temblar(); return; }
     const b = $("#loginBtn");
     b.disabled = true; b.innerHTML = SPIN + " Entrando…";
     try{
@@ -468,12 +698,14 @@
           ? "Correo o contraseña incorrectos."
           : msgError(error);
         resetLoginBtn();
+        temblar();
         return;
       }
-      await entrar();
+      await entrar(true);
     }catch(ex){
       err.textContent = msgError(ex);
       resetLoginBtn();
+      temblar();
     }
   });
 
@@ -483,8 +715,8 @@
   });
 
   /* Verifica que la persona sea administradora y carga los datos. */
-  async function entrar(){
-    mostrar("carga");
+  async function entrar(desdeLogin){
+    if (!desdeLogin) mostrar("carga");
     let esAdmin = false;
     try{
       const res = await db.rpc("es_admin");
@@ -499,7 +731,13 @@
       mostrarLogin("No tienes permiso para entrar a este panel.");
       return;
     }
+    if (desdeLogin && conMovimiento()){      // la tarjeta de login sale antes de mostrar el panel
+      $("#vistaLogin").classList.add("sale");
+      await esperar(280);
+    }
+    prepararEntrada(desdeLogin ? "larga" : "corta");
     mostrar("app");
+    moverIndicador();
     await cargarTodo();
   }
 
@@ -527,9 +765,10 @@
      CARGA DE DATOS
   ========================================================= */
   async function cargarTodo(){
-    $("#estadoCarga").hidden = false;
+    S.cargando = true;
     $("#estadoError").hidden = true;
-    $$("[data-panel]").forEach(p => p.hidden = true);
+    $$("[data-panel]").forEach(p => p.hidden = p.dataset.panel !== "productos");
+    $("#listaProductos").innerHTML = esqueletoHTML();
     try{
       const [cs, ps, hs, cf] = await Promise.all([
         operar(() => db.from("categorias").select("*").order("orden").order("id")),
@@ -541,11 +780,15 @@
       S.colSeccion = cs.length === 0 || cs.every(c => "disponible" in c);   // false = falta ejecutar el SQL 05
       if (!S.config) throw Object.assign(new Error("config"), { mensajeUsuario: "Falta la fila de configuración en la base de datos. Ejecuta de nuevo 01-esquema.sql." });
       iniciarFormDias();
-      $("#estadoCarga").hidden = true;
-      mostrarPestana(pestanaActual);
+      S.cargando = false;
+      const esq = quitarEsqueleto();
+      mostrarPestana(pestanaActual, false);
       renderTodo();
+      cruzarEsqueleto(esq);
     }catch(ex){
-      $("#estadoCarga").hidden = true;
+      S.cargando = false;
+      $("#listaProductos").innerHTML = "";
+      $$("[data-panel]").forEach(p => p.hidden = true);
       const e = $("#estadoError");
       e.hidden = false;
       e.innerHTML = esc(msgError(ex)) + '<br><button class="btn btn-sec" type="button" id="btnReintentar">Reintentar</button>';
@@ -564,13 +807,32 @@
      PESTAÑAS
   ========================================================= */
   let pestanaActual = "productos";
-  function mostrarPestana(nombre){
+  function mostrarPestana(nombre, animar){
+    const cambio = nombre !== pestanaActual;
     pestanaActual = nombre;
     $$(".tab").forEach(t => t.setAttribute("aria-selected", String(t.dataset.tab === nombre)));
+    moverIndicador();
     const hayDatos = S.config !== null;
-    $$("[data-panel]").forEach(p => { p.hidden = !hayDatos || p.dataset.panel !== nombre; });
+    $$("[data-panel]").forEach(p => {
+      const ver = hayDatos && p.dataset.panel === nombre;
+      p.hidden = !ver;
+      if (ver && cambio && animar !== false && conMovimiento()) reiniciarClase(p, "panel-entra");
+    });
     window.scrollTo(0, 0);
   }
+  /* El indicador activo se desliza (transform) bajo la pestaña elegida. */
+  function moverIndicador(){
+    const ind = $(".tab-ind"), t = $('.tab[aria-selected="true"]');
+    if (!ind || !t || !t.offsetWidth) return;
+    const r = t.getBoundingClientRect(), base = t.parentNode.getBoundingClientRect();   // medidas con decimales: calza exacto con la pestaña
+    ind.style.width = r.width + "px";
+    ind.style.height = r.height + "px";
+    ind.style.top = (r.top - base.top) + "px";
+    ind.style.transform = "translateX(" + (r.left - base.left) + "px)";
+    if (!ind.classList.contains("listo")) requestAnimationFrame(() => requestAnimationFrame(() => ind.classList.add("listo")));
+  }
+  if (window.ResizeObserver) new ResizeObserver(moverIndicador).observe($(".tabs"));
+  window.addEventListener("resize", moverIndicador);
   $$(".tab").forEach(t => t.addEventListener("click", () => mostrarPestana(t.dataset.tab)));
 
   /* Aviso de conexión */
@@ -591,7 +853,11 @@
   function cerrarModal(forzar){
     if (modalOcupado && !forzar) return;
     modalOcupado = false;
-    $("#modalHost").innerHTML = "";
+    const host = $("#modalHost"), viejo = host.firstElementChild;
+    if (viejo && conMovimiento()){      // salida simétrica a la entrada
+      viejo.classList.add("saliendo");
+      setTimeout(() => { if (viejo.parentNode === host) viejo.remove(); }, 220);
+    } else host.innerHTML = "";
     document.body.classList.remove("sin-scroll");
     liberarVistaPrevia();
     F = null;
@@ -633,7 +899,7 @@
     return '<div class="sec-sw">' + interruptor({
       on: !seccionOff(c), texto: "Sección disponible",
       sub: "Si la apagas, los clientes ven la sección como no disponible y no pueden pedir nada de ella. Tus productos conservan su estado.",
-      busy: S.busy.has("s" + c.id), attrs: 'data-act="sec-toggle" data-cat="' + c.id + '"'
+      busy: S.busy.has("s" + c.id), attrs: 'data-act="sec-toggle" data-cat="' + c.id + '" data-k="s' + c.id + '"'
     }) + "</div>";
   }
 
@@ -643,18 +909,19 @@
     const thumb = p.imagen_url
       ? '<img src="' + esc(p.imagen_url) + '" alt="" loading="lazy">'
       : SVG_LUNA;
-    return '<li class="prod' + (disp ? "" : " agotado") + (off ? " sec-off" : "") + '" data-id="' + p.id + '">' +
+    return '<li class="prod' + (disp ? "" : " agotado") + (off ? " sec-off" : "") + '" data-id="' + p.id + '" data-k="li' + p.id + '">' +
       '<div class="prod-top"><div class="miniatura">' + thumb + "</div>" +
       '<div class="prod-info"><strong>' + esc(p.nombre) + '</strong><span class="precio">' + fmtCOP(p.precio) + "</span>" +
-        (off ? '<span class="nota-sec">Sección deshabilitada</span>' : "") + "</div></div>" +
+        '<span class="nota-sec"' + (off ? "" : ' aria-hidden="true"') + ">Sección deshabilitada</span></div></div>" +
       '<div class="prod-acc">' +
-        interruptor({ on: disp, texto: "Disponible", sub: disp ? "" : "Agotado: no se puede pedir", busy: S.busy.has("p" + p.id), attrs: 'data-act="toggle"' }) +
+        interruptor({ on: disp, texto: "Disponible", sub: disp ? "" : "Agotado: no se puede pedir", busy: S.busy.has("p" + p.id), attrs: 'data-act="toggle" data-k="p' + p.id + '"' }) +
         '<button class="btn btn-sec btn-chico" type="button" data-act="editar">✏️ Editar</button>' +
         '<button class="btn btn-peligro btn-chico" type="button" data-act="eliminar">🗑️ Eliminar</button>' +
       "</div></li>";
   }
 
   function renderProductos(){
+    if (S.cargando) return;
     const q = norm(S.busqueda);
     const cont = $("#listaProductos");
     if (!S.productos.length){
@@ -668,11 +935,14 @@
       cont.innerHTML = '<div class="vacio">No encontramos productos con «' + esc(S.busqueda.trim()) + "».</div>";
       return;
     }
+    const previo = estadoPrevio(cont);
     cont.innerHTML = grupos.map(g =>
-      '<section class="grupo" data-cat="' + g.c.id + '"><div class="grupo-cab"><h3>' + esc(g.c.nombre) + ' <span class="cuenta">' + g.items.length + "</span></h3>" +
+      '<section class="grupo" data-cat="' + g.c.id + '"><div class="grupo-cab" data-k="h' + g.c.id + '"><h3>' + esc(g.c.nombre) + ' <span class="cuenta">' + g.items.length + "</span></h3>" +
       interruptorSeccion(g.c) + "</div><ul>" +
       g.items.map(filaProducto).join("") + "</ul></section>"
     ).join("");
+    animarCambios(cont, previo);
+    marcarCascada(cont);
   }
 
   /* Si una miniatura no carga, se cambia por la lunita (los eventos "error" no burbujean: captura) */
@@ -706,16 +976,19 @@
     const clave = "p" + id;
     if (!p || S.busy.has(clave)) return;
     const nuevo = p.disponible === false;
+    let guardadoOk = false;
     S.busy.add(clave); renderProductos();
     try{
       const filas = await operar(() => db.from("productos").update({ disponible: nuevo }).eq("id", id).select("id,disponible"));
       if (!filas || !filas.length || filas[0].disponible !== nuevo) throw noGuardado();
       p.disponible = nuevo;
+      guardadoOk = true;
       toast("Guardado ✓ «" + p.nombre + "» " + (nuevo ? "está disponible" : "quedó agotado"));
     }catch(ex){
       toast(msgError(ex), "error");
     }finally{
       S.busy.delete(clave); renderProductos();
+      if (guardadoOk) pulsar($('#listaProductos .prod[data-id="' + id + '"]'));
     }
   }
 
@@ -734,17 +1007,23 @@
       cerrarModal();
       if (!si) return;
     }
+    let guardadoOk = false;
     S.busy.add(clave); renderProductos(); renderCategorias();
     try{
       const filas = await operar(() => db.from("categorias").update({ disponible: nuevo }).eq("id", id).select("id,disponible"));
       if (!filas || filas.length !== 1 || filas[0].disponible !== nuevo) throw noGuardado();
       c.disponible = nuevo;
+      guardadoOk = true;
       toast("Guardado ✓ La sección «" + c.nombre + "» " + (nuevo ? "está disponible" : "quedó deshabilitada"));
     }catch(ex){
       if (ex && (ex.code === "PGRST204" || ex.code === "42703")) S.colSeccion = false;
       toast(msgError(ex), "error");
     }finally{
       S.busy.delete(clave); renderProductos(); renderCategorias();
+      if (guardadoOk){
+        pulsar($('#listaProductos .grupo[data-cat="' + id + '"] .sec-sw'));
+        pulsar($('#listaCategorias .cat-fila[data-id="' + id + '"] .sec-sw'));
+      }
     }
   }
 
@@ -773,9 +1052,10 @@
       if (!filas || !filas.length) throw noGuardado();
       S.productos = S.productos.filter(x => x.id !== id);
       modalOcupado = false; cerrarModal();
-      renderProductos(); renderCategorias();
       toast("Guardado ✓ «" + p.nombre + "» se eliminó");
       borrarImagenStorage(p.imagen_url);
+      await desvanecer($('#listaProductos .prod[data-id="' + id + '"]'));
+      conFlip($("#listaProductos"), () => { renderProductos(); renderCategorias(); });
     }catch(ex){
       modalOcupado = false; cerrarModal();
       toast(msgError(ex), "error");
@@ -798,6 +1078,7 @@
   function precioNumero(texto){ return parseInt(String(texto).replace(/\D/g, ""), 10) || 0; }
 
   function abrirFormProducto(id){
+    if (S.cargando) return;
     if (!S.categorias.length){
       toast("Primero crea una categoría en la pestaña «Categorías».", "error");
       return;
@@ -1024,6 +1305,7 @@
       const viejaImagen = orig && (F.blob || F.quitar) ? orig.imagen_url : null;
       modalOcupado = false; cerrarModal(true);
       renderProductos(); renderCategorias();
+      pulsar($('#listaProductos .prod[data-id="' + fila.id + '"]'));
       toast("Guardado ✓ «" + fila.nombre + "»");
       if (viejaImagen) borrarImagenStorage(viejaImagen);   // las imágenes del repo no se tocan
     }catch(ex){
@@ -1049,6 +1331,7 @@
       return;
     }
     const total = S.categorias.length;
+    const previo = estadoPrevio(cont);
     cont.innerHTML = S.categorias.map((c, i) => {
       const n = S.productos.filter(p => p.categoria_id === c.id).length;
       const ocupado = S.busy.has("c" + c.id);
@@ -1065,6 +1348,7 @@
         (n > 0 ? '<div class="ayuda" style="flex-basis:100%;font-size:.78rem;color:var(--suave)">Para eliminarla, primero mueve o elimina sus productos.</div>' : "") +
       "</div>";
     }).join("");
+    animarCambios(cont, previo);
   }
 
   $("#formNuevaCat").addEventListener("submit", async (e) => {
@@ -1198,7 +1482,7 @@
     if (!c) return;
     const temp = c.cerrado_temporalmente === true;
     const act = c.horario_activo === true;
-    $("#bannerCierre").hidden = !temp;
+    ponerBanner(temp);
     $("#tarjetaConfig").innerHTML =
       "<h2>Horario en la página</h2>" +
       '<p class="desc">Estos interruptores se aplican al tocarlos.</p>' +
