@@ -29,11 +29,12 @@
 .tema-halloween .cat-block{ position:relative; }
 
 .th-hero, .th-riel{ position:absolute; inset:0; overflow:hidden; z-index:-1; pointer-events:none; }
-.th-hero{ --web:84px; --luna:clamp(150px,19vw,260px); }
+/* nada animado queda bajo el encabezado (que desenfoca lo que tiene detrás): se recorta lo que cae debajo de él */
+.th-hero{ --web:84px; --luna:clamp(150px,19vw,260px); clip-path:inset(calc(var(--banner-h) + 77px) 0 0 0); }
 .th-hero > *{ position:absolute; display:block; }
 .th-hero svg, .th-riel svg, .th-pie svg, .th-slime svg{ overflow:visible; }
 .th-a{ will-change:transform; }
-.th-off .th-a, .tema-halloween.th-pausa .th-a{ animation-play-state:paused; }
+.th-off .th-a, .tema-halloween.th-pausa .th-a{ animation-play-state:paused !important; }
 
 /* luna llena con halo y nubecitas */
 .th-luna{ right:4%; top:calc(var(--banner-h) + 26px); width:var(--luna); height:auto; }

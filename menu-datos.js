@@ -129,7 +129,7 @@
   /* ===== Decoración de temporada =====
      Con el tema "normal" no se descarga nada. Si está activo, tema-halloween.css
      y tema-halloween.js se piden en un momento libre, después de pintar el menú. */
-  var TEMA_VER = "1";
+  var TEMA_VER = "2";
   var temaActual = "normal";
 
   /* Fecha de hoy en Colombia, "AAAA-MM-DD" (Colombia es UTC-5 todo el año). */
@@ -177,9 +177,11 @@
     if (t === temaActual) return;
     temaActual = t;
     if (t === "halloween"){
+      /* después de que la página terminó de cargar y el navegador esté libre */
       var iniciar = function(){ if (temaActual === "halloween") cargarTema(); };
-      if (window.requestIdleCallback) requestIdleCallback(iniciar, { timeout: 2500 });
-      else setTimeout(iniciar, 600);
+      var libre = function(){ if (window.requestIdleCallback) requestIdleCallback(iniciar, { timeout: 2500 }); else setTimeout(iniciar, 600); };
+      if (document.readyState === "complete") libre();
+      else window.addEventListener("load", libre, { once: true });
     } else if (window.LR_TEMA){
       window.LR_TEMA.desactivar();
     }
