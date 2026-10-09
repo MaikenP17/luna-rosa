@@ -1,1 +1,193 @@
-/* Decoración de Halloween (tierna). Todo cuelga de la clase .tema-halloween del body. */
+/* Decoración de Halloween tierna para Luna Rosa.
+   Todo cuelga de la clase .tema-halloween del body (la pone tema-halloween.js).
+   Solo se anima transform/opacity (y translate/scale, que son lo mismo por separado). */
+
+.tema-halloween{
+  --th-lav:#B9A3E8;      /* lavanda suave */
+  --th-mor:#7A4FB5;      /* morado: contornos y detalles oscuros */
+  --th-nar:#FFA766;      /* naranja calabaza suave */
+  --th-verde:#A8E6A1;    /* slime / menta */
+  --th-crema:#FFF3E0;
+}
+
+/* ---------- sprite: línea redondeada y colores ---------- */
+.o{ stroke:var(--th-mor); stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+.nf{ fill:none; }
+.w{ fill:none; stroke:var(--th-mor); stroke-width:1.3; stroke-linecap:round; opacity:.5; }
+.f-n{ fill:var(--th-nar); } .f-l{ fill:var(--th-lav); } .f-m{ fill:var(--th-mor); }
+.f-v{ fill:var(--th-verde); } .f-c{ fill:var(--th-crema); } .f-b{ fill:#fff; }
+.f-r{ fill:var(--rosa-principal); } .c-c{ color:var(--th-crema); }
+.c-n{ color:var(--th-nar); } .c-r{ color:var(--rosa-principal); } .c-m{ color:var(--th-mor); } .c-l{ color:var(--th-lav); }
+
+/* ---------- aparición con fundido ---------- */
+.th-x{ animation:th-ap 1s ease both; }
+@keyframes th-ap{ from{ opacity:0; } }
+
+/* ---------- capas que contienen las decoraciones (por debajo del contenido) ---------- */
+.tema-halloween .hero, .tema-halloween main#menu, .tema-halloween footer{ isolation:isolate; }
+.tema-halloween footer{ position:relative; overflow:hidden; }
+.tema-halloween .cat-block{ position:relative; }
+
+.th-hero, .th-riel{ position:absolute; inset:0; overflow:hidden; z-index:-1; pointer-events:none; }
+.th-hero{ --web:84px; --luna:clamp(150px,19vw,260px); }
+.th-hero > *{ position:absolute; display:block; }
+.th-hero svg, .th-riel svg, .th-pie svg, .th-slime svg{ overflow:visible; }
+.th-a{ will-change:transform; }
+.th-off .th-a, .tema-halloween.th-pausa .th-a{ animation-play-state:paused; }
+
+/* luna llena con halo y nubecitas */
+.th-luna{ right:4%; top:calc(var(--banner-h) + 26px); width:var(--luna); height:auto; }
+.th-n1{ right:calc(4% + var(--luna) * .62); top:calc(var(--banner-h) + 26px + var(--luna) * .62); width:calc(var(--luna) * .5); height:auto; }
+.th-n2{ right:calc(4% - 8px); top:calc(var(--banner-h) + 26px + var(--luna) * .8); width:calc(var(--luna) * .38); height:auto; }
+
+/* telarañas */
+.th-web{ width:var(--web); height:auto; top:calc(var(--banner-h) + 91px); }
+.th-wl{ left:0; }
+.th-wr{ right:0; transform:scaleX(-1); }
+
+/* guirnalda de banderines */
+.th-gui{ left:calc(var(--web) + 6px); width:calc(100% - 2 * var(--web) - 12px); height:32px; top:calc(var(--banner-h) + 88px); transform-origin:50% 0; }
+.th-gui.th-a{ animation:th-sway 6s ease-in-out infinite; }
+@keyframes th-sway{ 0%,100%{ transform:rotate(-.3deg); } 50%{ transform:rotate(.3deg); } }
+
+/* murciélagos kawaii: cruzan la pantalla con aleteo suave */
+.th-bat{ left:0; width:54px; height:auto; translate:-160px 0;
+  animation:th-cruza var(--d,28s) linear var(--w,0s) infinite backwards, th-aletea .5s ease-in-out infinite alternate; }
+@keyframes th-cruza{ 0%{ translate:-160px 0; } 10%{ translate:25vw -12px; } 20%{ translate:50vw 8px; } 30%{ translate:75vw -10px; } 38%,100%{ translate:calc(100vw + 160px) 0; } }
+@keyframes th-aletea{ to{ scale:1 .78; } }
+
+/* arañitas que suben y bajan de un hilo */
+.th-ara{ width:34px; animation:th-baja 5.5s ease-in-out infinite alternate; }
+.th-ara svg{ display:block; width:100%; height:auto; }
+.th-hilo{ position:absolute; left:50%; bottom:100%; width:0; height:520px; margin-left:-1px; border-left:1.6px solid var(--th-mor); opacity:.5; }
+.th-ara1{ left:6%; top:calc(var(--banner-h) + 190px); }
+.th-ara2{ left:28%; top:calc(var(--banner-h) + 200px); width:30px; animation-duration:7s; animation-delay:-2s; }
+@keyframes th-baja{ to{ transform:translateY(26px); } }
+@media (max-width:1000px){ .th-ara2{ display:none; } }
+
+/* fantasmitas flotando (junto al logo, por los lados) */
+.th-fan{ width:clamp(44px,4.5vw,72px); animation:th-flota 5s ease-in-out infinite; }
+.th-fan svg, .th-dulce svg{ display:block; width:100%; height:auto; }
+.th-fan1{ left:6%; top:calc(var(--lt,260px) + var(--lh,320px) * .3); }
+.th-fan2{ right:7%; top:calc(var(--lt,260px) + var(--lh,320px) * .55); animation-duration:6.2s; animation-delay:-2.4s; }
+@keyframes th-flota{ 0%,100%{ transform:translateY(0) rotate(-3deg); } 50%{ transform:translateY(-10px) rotate(3deg); } }
+
+/* caramelos y paletas */
+.th-dulce{ width:54px; }
+.th-dulce.th-a{ animation:th-flota 7s ease-in-out infinite; }
+.th-d1{ left:15%; top:calc(var(--lt,260px) + var(--lh,320px) * .06); }
+.th-d2{ right:14%; width:30px; top:calc(var(--lt,260px) + var(--lh,320px) * .72); transform:rotate(12deg); }
+.th-ds{ height:auto; }
+.th-s1{ left:9%; width:44px; top:calc(var(--lt,260px) + var(--lh,320px) * .86); transform:rotate(-18deg); }
+.th-s2{ right:21%; width:24px; top:calc(var(--lt,260px) + var(--lh,320px) * .2); transform:rotate(16deg); }
+.th-s3{ right:6%; width:42px; top:calc(var(--lt,260px) + var(--lh,320px) * .95); transform:rotate(14deg); }
+.th-s4{ left:22%; width:24px; top:calc(var(--lt,260px) + var(--lh,320px) * .5); transform:rotate(-14deg); }
+
+/* estrellitas y chispas titilando (dos capas a destiempo) */
+.th-est{ inset:0; animation:th-titila 2.8s ease-in-out infinite; }
+.th-est2{ animation-delay:-1.4s; }
+.th-chi{ position:absolute; height:auto; }
+@keyframes th-titila{ 0%,100%{ opacity:1; } 50%{ opacity:.25; } }
+
+/* sombrerito de bruja sobre la "L" del logotipo (se coloca por JS según el tamaño real del logo) */
+.th-sombrero{ display:none; left:var(--hx,0); top:var(--hy,0); width:var(--hw,40px); height:auto; transform:rotate(-13deg); transform-origin:50% 84%; }
+.th-hat .th-sombrero{ display:block; }
+
+/* ---------- goteo de slime bajo el encabezado ---------- */
+.th-slime{ position:absolute; left:0; right:0; top:calc(100% - 1px); height:16px; pointer-events:none; }
+.th-slime svg{ position:absolute; left:0; top:0; width:100%; height:16px; }
+.th-ga{ animation:th-gota 5s ease-in-out infinite; }
+.th-gb{ animation:th-gota 4s ease-in-out -1.5s infinite; }
+@keyframes th-gota{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(2px); } }
+
+/* ---------- títulos de sección y bordes ---------- */
+.th-tit{ height:auto; pointer-events:none; }
+.th-webs{ position:absolute; top:-50px; width:50px; height:auto; pointer-events:none; }
+.th-webs.th-wl{ left:0; } .th-webs.th-wr{ right:0; }
+@media (min-width:768px){
+  .tema-halloween .cat-title{ display:flex; align-items:center; justify-content:center; gap:.4em; }
+  .th-tit{ position:static; flex:none; height:1.1em; width:auto; }
+}
+@media (max-width:767px){
+  .th-tit{ position:absolute; top:-40px; left:4px; width:34px; pointer-events:none; }
+  .th-webs{ width:42px; top:-44px; }
+}
+/* sección cuyo nombre lleva "Halloween": marco punteado y cinta */
+.tema-halloween .cat-block.th-hw::before{ content:""; position:absolute; inset:-20px -14px -12px; border:2.5px dashed var(--th-lav); border-radius:30px; pointer-events:none; }
+.tema-halloween .cat-block.th-hw::after{
+  content:"Especial de temporada"; position:absolute; top:-33px; left:50%; transform:translateX(-50%); white-space:nowrap; pointer-events:none;
+  background:var(--th-crema); color:var(--th-mor); border:2px solid var(--th-lav); border-radius:100px;
+  font-family:var(--font-body); font-weight:700; font-size:.7rem; letter-spacing:1px; text-transform:uppercase; padding:3px 12px;
+}
+.tema-halloween .cat-block.th-hw .cat-title{ color:var(--th-mor); }
+
+/* ---------- márgenes laterales (solo pantallas anchas) ---------- */
+.th-obs{ position:absolute; width:clamp(46px, calc((100% - 1152px) / 2 * .55), 96px); }
+.th-obs svg{ display:block; width:100%; height:auto; }
+.th-rl{ left:calc((100% - 1152px) / 4 - 24px); } .th-rr{ right:calc((100% - 1152px) / 4 - 24px); }
+.th-r-paleta, .th-r-caramelo{ width:clamp(30px, calc((100% - 1152px) / 2 * .3), 52px); }
+.th-fl{ animation:th-flota 6s ease-in-out infinite; }
+
+/* ---------- pie de página ---------- */
+.th-pie{ margin-top:26px; pointer-events:none; }
+.th-fila{ display:flex; align-items:flex-end; justify-content:center; gap:14px; }
+.th-fila svg{ flex:none; width:44px; height:auto; }
+.th-bob{ animation:th-bob 3.4s ease-in-out infinite; }
+.th-bob2{ animation-delay:-1.7s; }
+@keyframes th-bob{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-7px); } }
+.th-feliz{
+  display:inline-block; margin-top:14px; background:var(--th-crema); color:var(--th-mor); border:2px solid var(--th-lav); border-radius:100px;
+  font-family:var(--font-display); font-size:1.2rem; padding:6px 22px;
+}
+.th-fweb{ position:absolute; top:0; width:56px; height:auto; pointer-events:none; }
+.th-fweb.th-wl{ left:0; } .th-fweb.th-wr{ right:0; transform:scaleX(-1); }
+
+/* ---------- mini estallido del carrito ---------- */
+.th-burst{ position:absolute; width:0; height:0; z-index:1450; pointer-events:none; }
+.th-bu{ position:absolute; left:-9px; top:-9px; width:18px; height:auto; opacity:0; animation:th-bu .62s ease-out forwards; }
+@keyframes th-bu{
+  0%{ opacity:1; transform:translate(0,0) scale(.4) rotate(0); }
+  70%{ opacity:1; }
+  100%{ opacity:0; transform:translate(var(--dx),var(--dy)) scale(1.1) rotate(var(--r)); }
+}
+
+/* ---------- celular: versión más ligera ---------- */
+@media (max-width:767px){
+  .th-hero{ --web:56px; --luna:clamp(120px,36vw,150px); }
+  .th-luna{ right:-18px; top:calc(var(--banner-h) + 20px); }
+  .th-n1{ right:calc(var(--luna) * .42); top:calc(var(--banner-h) + 20px + var(--luna) * .5); width:calc(var(--luna) * .4); }
+  .th-gui{ width:calc((100% - 124px) / .75); left:calc(62px - (100% - 124px) / 6); scale:.75; }
+  .th-bat{ width:42px; }
+  .th-ara{ width:28px; }
+  .th-ara1{ left:30px; top:calc(var(--banner-h) + 112px); }
+  .th-fan{ width:42px; }
+  .th-fan1{ left:2%; top:calc(var(--lt,240px) + var(--lh,220px) * .42); }
+  .th-dulce{ width:36px; }
+  .th-d1{ left:auto; right:3%; top:calc(var(--lt,240px) + var(--lh,220px) * .62); }
+  .th-s1{ left:3%; width:34px; top:calc(var(--lt,240px) + var(--lh,220px) * .1); }
+  .th-s2{ right:3%; width:20px; top:calc(var(--lt,240px) + var(--lh,220px) * .22); }
+  .th-fila{ gap:10px; }
+  .th-fila svg{ width:38px; }
+  .th-feliz{ font-size:1.05rem; padding:5px 18px; }
+}
+
+/* ---------- detalles de color en tarjetas, botones y chips (anillos, sin cambiar tamaños ni textos) ---------- */
+.tema-halloween header{ border-bottom-color:rgba(122,79,181,.28); }
+.tema-halloween .card{ box-shadow:0 4px 20px rgba(224,126,144,.12), 0 0 0 1.5px rgba(185,163,232,.6); }
+.tema-halloween .card:hover{ box-shadow:0 14px 34px rgba(224,126,144,.24), 0 0 0 1.5px rgba(255,167,102,.75); }
+.tema-halloween .cat-pill{ border-color:rgba(185,163,232,.75); color:#5b3a91; }
+.tema-halloween .cat-pill.active{ color:#fff; border-color:var(--th-mor); }
+.tema-halloween .add-btn{ box-shadow:0 0 0 3px rgba(185,163,232,.55); }
+.tema-halloween .add-btn:hover:not(:disabled){ box-shadow:0 0 0 3px rgba(255,167,102,.7); }
+.tema-halloween .add-btn:disabled{ box-shadow:none; }
+.tema-halloween .qty-control{ box-shadow:inset 0 0 0 1.5px rgba(185,163,232,.7); }
+.tema-halloween .modal-add-btn:not(:disabled), .tema-halloween .whatsapp-order-btn:not(:disabled){ box-shadow:0 0 0 3px rgba(185,163,232,.55); }
+.tema-halloween .product-modal{ box-shadow:0 20px 60px rgba(0,0,0,.25), 0 0 0 3px rgba(185,163,232,.55); }
+.tema-halloween .btn-primary{ box-shadow:0 8px 24px rgba(224,126,144,.35), 0 0 0 3px rgba(185,163,232,.55); }
+
+/* ---------- movimiento reducido: decoraciones solo estáticas, sin estallido ---------- */
+@media (prefers-reduced-motion: reduce){
+  .th-x, .th-a, .th-bu{ animation:none !important; will-change:auto; }
+  .th-bat{ translate:var(--bx,20vw) 0; scale:none; }
+  .th-burst{ display:none; }
+}
